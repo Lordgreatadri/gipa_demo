@@ -1,0 +1,29 @@
+
+LARAVEL 12.64.0
+PHP 8.2.33
+
+In this project /pro-docs/ are IOMP_SYSTEM _POC.docx, the client project
+requirement and IOMP_Technical_Prototype_Document.docx for the demo project.
+Please, review both documents thoroughly and build an industry standard demo
+project as the IOMP_SYSTEM _POC.docx prototype to showcase to the client.
+Consider mobile first design for the UI and PWA in mind to make app accessible
+on mobile intallable on mobile and be available offline capacity.
+
+Please, duly follow the document and requirement attached before starting the work
+to avoid making expensive mistakes. This project is for a government agency
+so you can see how important professionalism is as far as this project is concern.
+
+Build the landing page first with outstanding modern design.
+
+Migration, models and proper normalization and relationship should be considered
+keeping proper security in mind. UUID should be used in every table and uuid in routes for security. dyrynda/laravel-model-uuid istalled, use GeneratesUuid; trait.
+You can install Laravel 12 is already cloned here, you can get the
+rest of the needed packages in the IOMP_Technical_Prototype_Document.docx for your
+reference. Install them for your use. For roles and permissions we are using spartie alreay installed.
+MideaLibrary for files. Installed.
+
+Please, it is very crucial to make the platform scallable and extensible. Not tightly coupled.
+Decouple vital component to make the platform extensible/scallable.
+
+
+

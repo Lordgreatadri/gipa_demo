@@ -1,0 +1,20 @@
+{
+    "name": "IOMP - Ghana Investment Opportunities",
+    "short_name": "IOMP",
+    "description": "Discover verified investment opportunities across Ghana.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#fbfcfb",
+    "theme_color": "#075b3b",
+    "orientation": "portrait-primary",
+    "categories": ["business", "government", "finance"],
+    "icons": [
+        {
+            "src": "/icons/iomp-icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}
