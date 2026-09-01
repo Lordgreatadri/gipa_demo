@@ -1,4 +1,10 @@
+import { createIcons, Eye, EyeOff } from 'lucide';
+
 import './bootstrap';
+
+createIcons({
+	icons: { Eye, EyeOff },
+});
 
 const root = document.documentElement;
 const themeToggle = document.querySelector('[data-theme-toggle]');
@@ -73,4 +79,72 @@ installButton?.addEventListener('click', async () => {
 	await installPrompt.prompt();
 	installPrompt = null;
 	installButton.hidden = true;
+});
+
+const filterToggle = document.querySelector('[data-filter-toggle]');
+const filterPanel = document.querySelector('[data-filter-panel]');
+
+filterToggle?.addEventListener('click', () => {
+	const isOpen = filterToggle.getAttribute('aria-expanded') === 'true';
+	filterToggle.setAttribute('aria-expanded', String(!isOpen));
+	filterPanel?.classList.toggle('is-open', !isOpen);
+});
+
+const regionSelect = document.querySelector('[data-region-select]');
+const districtSelect = document.querySelector('[data-district-select]');
+
+const updateDistrictOptions = () => {
+	if (!regionSelect || !districtSelect) return;
+
+	const region = regionSelect.value;
+	Array.from(districtSelect.options).forEach((option) => {
+		if (!option.value) return;
+		option.hidden = Boolean(region) && option.dataset.region !== region;
+	});
+
+	if (districtSelect.selectedOptions[0]?.hidden) districtSelect.value = '';
+};
+
+regionSelect?.addEventListener('change', updateDistrictOptions);
+updateDistrictOptions();
+
+const sectorSelect = document.querySelector('[data-sector-select]');
+const subSectorSelect = document.querySelector('[data-sub-sector-select]');
+
+const updateSubSectorOptions = () => {
+	if (!sectorSelect || !subSectorSelect) return;
+
+	Array.from(subSectorSelect.options).forEach((option) => {
+		if (!option.value) return;
+		option.hidden = Boolean(sectorSelect.value) && option.dataset.sector !== sectorSelect.value;
+	});
+
+	if (subSectorSelect.selectedOptions[0]?.hidden) subSectorSelect.value = '';
+};
+
+sectorSelect?.addEventListener('change', updateSubSectorOptions);
+updateSubSectorOptions();
+
+const adminMenu = document.querySelector('[data-admin-menu]');
+const adminSidebar = document.querySelector('[data-admin-sidebar]');
+
+adminMenu?.addEventListener('click', () => {
+	const isOpen = adminMenu.getAttribute('aria-expanded') === 'true';
+	adminMenu.setAttribute('aria-expanded', String(!isOpen));
+	adminMenu.setAttribute('aria-label', isOpen ? 'Open staff navigation' : 'Close staff navigation');
+	adminSidebar?.classList.toggle('is-open', !isOpen);
+});
+
+document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+	button.addEventListener('click', () => {
+		const input = document.getElementById(button.getAttribute('aria-controls'));
+		if (!input) return;
+
+		const isVisible = input.type === 'text';
+		input.type = isVisible ? 'password' : 'text';
+		button.setAttribute('aria-pressed', String(!isVisible));
+		button.setAttribute('aria-label', `${isVisible ? 'Show' : 'Hide'} ${input.name === 'password_confirmation' ? 'confirm password' : 'password'}`);
+		button.querySelector('[data-password-show]').hidden = !isVisible;
+		button.querySelector('[data-password-hide]').hidden = isVisible;
+	});
 });

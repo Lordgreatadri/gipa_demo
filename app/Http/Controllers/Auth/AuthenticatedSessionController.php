@@ -15,12 +15,12 @@ class AuthenticatedSessionController extends Controller
 {
     public function createInvestor(): View
     {
-        return view('auth.login', ['portal' => 'investor']);
+        return view('auth.investor-login');
     }
 
     public function createStaff(): View
     {
-        return view('auth.login', ['portal' => 'staff']);
+        return view('auth.staff-login');
     }
 
     public function storeInvestor(LoginRequest $request): RedirectResponse

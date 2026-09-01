@@ -1,0 +1,11 @@
+<x-admin-layout title="Dashboard">
+    <div class="admin-page-heading"><div><p class="admin-kicker">Operational overview</p><h1>Investment pipeline</h1><p>Monitor approvals, district publication and investor response workload.</p></div><a class="button button--gold" href="{{ route('staff.opportunities.index') }}">Open review queue</a></div>
+    <section class="metric-grid" aria-label="Platform indicators">
+        @foreach([['label'=>'Opportunities','value'=>$metrics['opportunities'],'tone'=>'green'],['label'=>'Pending approval','value'=>$metrics['pending_opportunities'],'tone'=>'gold'],['label'=>'Districts','value'=>$metrics['districts'],'tone'=>'blue'],['label'=>'Districts in review','value'=>$metrics['districts_under_review'],'tone'=>'gold'],['label'=>'Open inquiries','value'=>$metrics['open_inquiries'],'tone'=>'red'],['label'=>'SLA breaches','value'=>$metrics['sla_breaches'],'tone'=>'red']] as $metric)
+            <article class="metric metric--{{ $metric['tone'] }}"><span>{{ $metric['label'] }}</span><strong>{{ number_format($metric['value']) }}</strong><small>Current system total</small></article>
+        @endforeach
+    </section>
+    <section class="admin-section"><div class="admin-section__heading"><div><h2>Approval queue</h2><p>Items closest to their service deadline appear first.</p></div><a href="{{ route('staff.opportunities.index', ['status'=>'pending_approval']) }}">View all</a></div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Opportunity</th><th>District</th><th>Reviewer</th><th>SLA</th><th></th></tr></thead><tbody>@forelse($reviewQueue as $item)<tr><td><strong>{{ $item->title }}</strong><small>Pending approval</small></td><td>{{ $item->district->name }}</td><td>{{ $item->reviewer?->name ?? 'Unassigned' }}</td><td @class(['is-overdue'=>$item->sla_due_at?->isPast()])>{{ $item->sla_due_at?->diffForHumans() ?? 'Not set' }}</td><td><a href="{{ route('staff.opportunities.show', $item) }}">Review</a></td></tr>@empty<tr><td colspan="5" class="table-empty">No opportunities are awaiting approval.</td></tr>@endforelse</tbody></table></div>
+    </section>
+</x-admin-layout>

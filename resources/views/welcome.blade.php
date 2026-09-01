@@ -35,7 +35,7 @@
                 </a>
 
                 <nav class="desktop-nav" aria-label="Primary navigation">
-                    <a href="#opportunities">Opportunities</a>
+                    <a href="{{ route('opportunities.index') }}">Opportunities</a>
                     <a href="#map">Investment map</a>
                     <a href="#districts">Districts</a>
                     <a href="#insights">Insights</a>
@@ -46,7 +46,7 @@
                         <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>
                         <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.7 13.2A8.5 8.5 0 1 1 10.8 3.3a6.5 6.5 0 0 0 9.9 9.9Z"></path></svg>
                     </button>
-                    <a class="button button--outline header-login" href="#">Staff login</a>
+                    <a class="button button--outline header-login" href="{{ route('staff.login') }}">Staff login</a>
                     <button class="icon-button menu-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-navigation" aria-label="Open navigation">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
                     </button>
@@ -54,21 +54,35 @@
             </div>
 
             <nav class="mobile-nav" id="mobile-navigation" data-mobile-nav aria-label="Mobile navigation" hidden>
-                <a href="#opportunities">Opportunities</a>
+                <a href="{{ route('opportunities.index') }}">Opportunities</a>
                 <a href="#map">Investment map</a>
                 <a href="#districts">Districts</a>
                 <a href="#insights">Insights</a>
-                <a href="#">Staff login</a>
+                <a href="{{ route('staff.login') }}">Staff login</a>
             </nav>
         </header>
 
         <main id="main-content">
             <section class="hero" aria-labelledby="hero-title">
                 <div class="hero__scene" aria-hidden="true">
-                    <div class="map-lines"></div>
-                    <span class="map-region map-region--one"></span>
-                    <span class="map-region map-region--two"></span>
-                    <span class="map-region map-region--three"></span>
+                    <svg class="ghana-map" viewBox="0 0 440 620" role="presentation">
+                        <defs>
+                            <clipPath id="ghana-outline">
+                                <path d="M420 489.4 274.3 542.5 222.6 573.7 138.9 600 56.1 574.2 60.3 538.4 20 460.2 44.2 357.6 83.4 281.4 58.7 152.2 46.1 83.8 48.2 32.3 209.7 28 250.7 34.7 280.7 20 323.7 27.2 316.9 55.5 355.6 102.4 355.5 168.3 364.3 239.8 387.7 272.9 367.1 354.7 374.5 399.9 399.3 457.5 420 489.4Z" />
+                            </clipPath>
+                            <linearGradient id="ghana-fill" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0" stop-color="#14835a" />
+                                <stop offset="1" stop-color="#07543a" />
+                            </linearGradient>
+                        </defs>
+                        <path class="ghana-map__shadow" d="M420 489.4 274.3 542.5 222.6 573.7 138.9 600 56.1 574.2 60.3 538.4 20 460.2 44.2 357.6 83.4 281.4 58.7 152.2 46.1 83.8 48.2 32.3 209.7 28 250.7 34.7 280.7 20 323.7 27.2 316.9 55.5 355.6 102.4 355.5 168.3 364.3 239.8 387.7 272.9 367.1 354.7 374.5 399.9 399.3 457.5 420 489.4Z" />
+                        <path class="ghana-map__land" d="M420 489.4 274.3 542.5 222.6 573.7 138.9 600 56.1 574.2 60.3 538.4 20 460.2 44.2 357.6 83.4 281.4 58.7 152.2 46.1 83.8 48.2 32.3 209.7 28 250.7 34.7 280.7 20 323.7 27.2 316.9 55.5 355.6 102.4 355.5 168.3 364.3 239.8 387.7 272.9 367.1 354.7 374.5 399.9 399.3 457.5 420 489.4Z" />
+                        <g class="ghana-map__regions" clip-path="url(#ghana-outline)">
+                            <path d="M-10 130C90 170 190 115 450 150M-10 250C100 210 245 300 450 235M-10 375C130 325 275 430 450 355M-10 490C120 450 250 525 450 470" />
+                            <path d="M115-10C95 140 165 245 125 650M235-10C205 135 285 310 230 650M345-10C300 160 390 350 330 650" />
+                        </g>
+                        <path class="ghana-map__coast" d="M420 489.4 274.3 542.5 222.6 573.7 138.9 600 56.1 574.2" />
+                    </svg>
                     <button class="map-pin map-pin--one" type="button" tabindex="-1"><i></i><span>Agro-processing<br><strong>GHS 24M</strong></span></button>
                     <button class="map-pin map-pin--two" type="button" tabindex="-1"><i></i><span>Solar infrastructure<br><strong>USD 8.2M</strong></span></button>
                     <button class="map-pin map-pin--three" type="button" tabindex="-1"><i></i><span>Logistics hub<br><strong>USD 12M</strong></span></button>
@@ -80,7 +94,7 @@
                     <h1 id="hero-title">Ghana's investment opportunities, <em>mapped.</em></h1>
                     <p class="hero__lead">Discover verified projects, regional strengths and investable opportunities across every district.</p>
 
-                    <form class="opportunity-search" action="#opportunities" method="get" role="search">
+                    <form class="opportunity-search" action="{{ route('opportunities.index') }}" method="get" role="search">
                         <label class="search-field">
                             <span class="sr-only">Search investment opportunities</span>
                             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
@@ -90,10 +104,7 @@
                             <span class="sr-only">Region</span>
                             <select name="region">
                                 <option value="">All regions</option>
-                                <option>Greater Accra</option>
-                                <option>Ashanti</option>
-                                <option>Western</option>
-                                <option>Northern</option>
+                                @foreach($filters['regions'] as $region)<option value="{{ $region->uuid }}">{{ $region->name }}</option>@endforeach
                             </select>
                         </label>
                         <button class="button button--gold" type="submit">Explore opportunities</button>
@@ -126,7 +137,7 @@
                             <h2 id="opportunities-title">Featured opportunities</h2>
                             <p>Explore high-potential projects reviewed for investor discovery.</p>
                         </div>
-                        <a class="text-link" href="#">View all opportunities <span aria-hidden="true">→</span></a>
+                        <a class="text-link" href="{{ route('opportunities.index') }}">View all opportunities <span aria-hidden="true">→</span></a>
                     </div>
 
                     <div class="opportunity-grid">
@@ -191,7 +202,7 @@
             <section class="investor-cta" aria-labelledby="cta-title">
                 <div class="shell investor-cta__inner">
                     <div><p class="eyebrow"><span></span> Investor support</p><h2 id="cta-title">Found an opportunity worth exploring?</h2><p>Connect with the right team and take the next informed step.</p></div>
-                    <a class="button button--light" href="#">Submit an investor inquiry</a>
+                    <a class="button button--light" href="{{ route('opportunities.index') }}">Find an opportunity</a>
                 </div>
             </section>
         </main>
