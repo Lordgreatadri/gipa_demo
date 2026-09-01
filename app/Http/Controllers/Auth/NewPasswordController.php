@@ -17,7 +17,10 @@ class NewPasswordController extends Controller
 {
     public function create(Request $request): View
     {
-        return view('auth.reset-password', ['request' => $request]);
+        return view('auth.reset-password', [
+            'request' => $request,
+            'portal' => $request->string('portal')->toString() === 'staff' ? 'staff' : 'investor',
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -28,9 +31,11 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', PasswordRule::min(10)->letters()->mixedCase()->numbers()],
         ]);
 
+        $loginRoute = 'login';
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password): void {
+            function (User $user, string $password) use (&$loginRoute): void {
+                $loginRoute = $user->isStaff() ? 'staff.login' : 'login';
                 $user->forceFill([
                     'password' => Hash::make($password),
                     'remember_token' => Str::random(60),
@@ -41,7 +46,7 @@ class NewPasswordController extends Controller
         );
 
         return $status === Password::PasswordReset
-            ? redirect()->route('login')->with('status', __($status))
+            ? redirect()->route($loginRoute)->with('status', __($status))
             : back()->withInput($request->only('email'))->withErrors(['email' => __($status)]);
     }
 }

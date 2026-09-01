@@ -5,11 +5,23 @@ use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DistrictWorkflowController;
+use App\Http\Controllers\Admin\OpportunityWorkflowController;
+use App\Http\Controllers\Admin\OpportunityReferenceDataController;
+use App\Http\Controllers\PublicPortal\OpportunityController;
+use App\Services\PublicOpportunityFilters;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', function (PublicOpportunityFilters $filters) {
+    return view('welcome', ['filters' => $filters->options()]);
 })->name('home');
+
+Route::get('/opportunities', [OpportunityController::class, 'index'])->name('opportunities.index');
+Route::get('/opportunities/{opportunity}', [OpportunityController::class, 'show'])->name('opportunities.show');
+Route::post('/opportunities/{opportunity}/inquiries', [OpportunityController::class, 'storeInquiry'])
+    ->middleware('throttle:5,1')
+    ->name('opportunities.inquiries.store');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'createInvestor'])->name('login');
@@ -33,7 +45,30 @@ Route::middleware('auth')->group(function () {
     Route::post('/email/verification-notification', [EmailVerificationController::class, 'send'])->middleware('throttle:6,1')->name('verification.send');
 
     Route::view('/portal', 'portal.investor')->middleware('verified')->name('investor.dashboard');
-    Route::view('/staff', 'portal.staff')->name('staff.dashboard');
+});
+
+Route::prefix('staff')->name('staff.')->middleware(['auth', 'staff'])->group(function () {
+    Route::get('/', DashboardController::class)->name('dashboard');
+    Route::get('/reference-data', [OpportunityReferenceDataController::class, 'index'])->name('reference-data.index');
+    Route::post('/reference-data/{type}', [OpportunityReferenceDataController::class, 'store'])->name('reference-data.store');
+    Route::put('/reference-data/{type}/{record}', [OpportunityReferenceDataController::class, 'update'])->name('reference-data.update');
+    Route::delete('/reference-data/{type}/{record}', [OpportunityReferenceDataController::class, 'destroy'])->name('reference-data.destroy');
+    Route::get('/opportunities', [OpportunityWorkflowController::class, 'index'])->name('opportunities.index');
+    Route::get('/opportunities/create', [OpportunityWorkflowController::class, 'create'])->name('opportunities.create');
+    Route::post('/opportunities', [OpportunityWorkflowController::class, 'store'])->name('opportunities.store');
+    Route::get('/opportunities/{opportunity}/edit', [OpportunityWorkflowController::class, 'edit'])->name('opportunities.edit');
+    Route::put('/opportunities/{opportunity}', [OpportunityWorkflowController::class, 'update'])->name('opportunities.update');
+    Route::delete('/opportunities/{opportunity}', [OpportunityWorkflowController::class, 'destroy'])->name('opportunities.destroy');
+    Route::get('/opportunities/{opportunity}', [OpportunityWorkflowController::class, 'show'])->name('opportunities.show');
+    Route::post('/opportunities/{opportunity}/{action}', [OpportunityWorkflowController::class, 'transition'])->name('opportunities.transition');
+    Route::get('/districts', [DistrictWorkflowController::class, 'index'])->name('districts.index');
+    Route::get('/districts/create', [DistrictWorkflowController::class, 'create'])->name('districts.create');
+    Route::post('/districts', [DistrictWorkflowController::class, 'store'])->name('districts.store');
+    Route::get('/districts/{district}/edit', [DistrictWorkflowController::class, 'edit'])->name('districts.edit');
+    Route::put('/districts/{district}', [DistrictWorkflowController::class, 'update'])->name('districts.update');
+    Route::delete('/districts/{district}', [DistrictWorkflowController::class, 'destroy'])->name('districts.destroy');
+    Route::get('/districts/{district}', [DistrictWorkflowController::class, 'show'])->name('districts.show');
+    Route::post('/districts/{district}/{action}', [DistrictWorkflowController::class, 'transition'])->name('districts.transition');
 });
 
 Route::get('/health', function () {

@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PublicPlatformTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_landing_page_identifies_the_platform(): void
     {
         $this->get('/')

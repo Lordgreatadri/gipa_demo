@@ -1,0 +1,18 @@
+<x-admin-layout title="Opportunity management">
+    <div class="admin-page-heading"><div><p class="admin-kicker">Content and governance</p><h1>Opportunities</h1><p>Review lifecycle state, assignment and SLA position across the investment pipeline.</p></div>@can('opportunities.submit')<a class="button button--gold" href="{{ route('staff.reference-data.index') }}">Add opportunity</a>@endcan</div>
+    <section class="metric-grid" aria-label="Opportunity overview">
+        @foreach([
+            ['label'=>'Opportunities','value'=>number_format($metrics['total']),'note'=>'Pipeline total','tone'=>'green'],
+            ['label'=>'Pipeline value','value'=>'GHS '.number_format($metrics['pipeline_value']/1000000, 1).'M','note'=>'GHS-denominated records','tone'=>'gold'],
+            ['label'=>'Pending approval','value'=>number_format($metrics['pending']),'note'=>'Awaiting decision','tone'=>'gold'],
+            ['label'=>'Active','value'=>number_format($metrics['active']),'note'=>'Published investments','tone'=>'blue'],
+            ['label'=>'District reach','value'=>number_format($metrics['districts']),'note'=>'Districts represented','tone'=>'green'],
+            ['label'=>'SLA breaches','value'=>number_format($metrics['overdue']),'note'=>'Overdue reviews','tone'=>'red'],
+        ] as $metric)
+            <article class="metric metric--{{ $metric['tone'] }}"><span>{{ $metric['label'] }}</span><strong>{{ $metric['value'] }}</strong><small>{{ $metric['note'] }}</small></article>
+        @endforeach
+    </section>
+    <form class="admin-filterbar" method="get"><label><span>Status</span><select name="status" onchange="this.form.submit()"><option value="">All statuses</option>@foreach(['draft'=>'Draft','pending_approval'=>'Pending approval','approved'=>'Approved','active'=>'Active','completed'=>'Completed','cancelled'=>'Cancelled'] as $value=>$label)<option value="{{ $value }}" @selected(request('status')===$value)>{{ $label }}</option>@endforeach</select></label><a href="{{ route('staff.opportunities.index') }}">Reset</a></form>
+    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Opportunity</th><th>District / sector</th><th>Status</th><th>Reviewer</th><th>SLA</th><th>Actions</th></tr></thead><tbody>@forelse($opportunities as $item)<tr><td><strong>{{ $item->title }}</strong><small>Updated {{ $item->updated_at->diffForHumans() }}</small></td><td>{{ $item->district->name }}<small>{{ $item->sector->name }}</small></td><td><span class="admin-status admin-status--{{ $item->workflow_status }}">{{ str($item->workflow_status)->replace('_',' ')->title() }}</span></td><td>{{ $item->reviewer?->name ?? 'Unassigned' }}</td><td @class(['is-overdue'=>$item->sla_due_at?->isPast()])>{{ $item->sla_due_at?->diffForHumans() ?? '—' }}</td><td><div class="table-actions"><a href="{{ route('staff.opportunities.show', $item) }}">Open</a>@if($item->workflow_status === 'draft' && auth()->user()->can('opportunities.submit'))<a href="{{ route('staff.opportunities.edit', $item) }}">Edit</a><form method="post" action="{{ route('staff.opportunities.destroy', $item) }}" onsubmit="return confirm('Delete this opportunity draft?')">@csrf @method('DELETE')<button type="submit">Delete</button></form>@endif</div></td></tr>@empty<tr><td colspan="6" class="table-empty">No opportunities match this view.</td></tr>@endforelse</tbody></table></div>
+    <div class="admin-pagination">{{ $opportunities->links() }}</div>
+</x-admin-layout>

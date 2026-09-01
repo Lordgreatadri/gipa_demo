@@ -298,3 +298,96 @@ Component
 4 External system integrations (ORC, GIS, payments)
 5 AI assistant (chatbot) 
 6 Internal automation & dashboards
+
+
+8888888888888888888888888888888888888
+
+
+Next up is the IOMP opportunity lifecycle, district publishing, financials, contacts, documents, workflow events, and inquiries.
+The next logical milestone is implementing the public opportunity search and advanced filters on top of this database foundation.
+Let's continue with the platform logic with service, controllers, routes, UI. But first review the /pro-docs/ again for a better undersdanding to avoid 
+expensive mistakes. Let's build this with professional taste and look with data flow and UI design.
+Remember the system needs to be scallable and consider memory usage for queries for best practices and performance. Let move on step by step with the components:
+
+Component
+1 Investor onboarding & aftercare platform 
+2 Certificates & anti-forgery verification (MVP) 
+3 Investor-to-business matchmaking
+4 External system integrations (ORC, GIS, payments)
+5 AI assistant (chatbot) 
+6 Internal automation & dashboards
+
+from the doc:
+# 8. Prototype Modules
+
+**A. Public Portal: **Landing
+page; search; district list/detail; opportunity list/detail; interactive map;
+compare; investor inquiry; responsive/PWA shell.
+
+**B. Authentication
+& Access: **Login, password reset, session controls, MFA-ready
+architecture, roles, groups, permissions and district-level restrictions.
+
+**C. Region &
+District Management: **261-district registry; region hierarchy; geometry;
+readiness score; economic data; population; area; import GeoJSON;
+draft/review/publish workflow.
+
+**D. Opportunity
+Management: **Structured opportunity form; location; sector/sub-sector;
+enterprise type; status; rationale; financials; contacts; documents; lifecycle
+workflow.
+
+**E. Workflow &
+SLA: **Draft → pending approval → approved → active → completed/cancelled;
+submit/approve/reject/reassign; SLA timers and breach alerts.
+
+**F. Geospatial &
+Investment Map: **PostGIS; GeoJSON; nearby/bounding-box/polygon queries;
+cascading filters; map markers and district boundaries.
+
+**G. Investor
+Inquiries: **Public inquiry form linked to opportunity; tracking; assignment;
+response status; email notifications.
+
+**H. Dashboard &
+Reports: **Regional distribution; sector investment; opportunity timeline;
+readiness distribution; job creation; infrastructure quality.
+
+**I. Audit &
+Compliance: **Material admin/API action logging; actor, timestamp, IP, route,
+action, entity and before/after data where appropriate; retention/export.
+
+**J. Notifications: **Configurable
+email templates for submission, approval, rejection, inquiry and SLA breach.
+
+**K. Settings &
+Maintenance: **Workflow, notification, audit, onboarding and maintenance
+settings; admin/IP whitelist; graceful public maintenance page.
+
+**L. API: **Versioned
+REST resources; JWT requirement for API as stated in TOR; OpenAPI
+documentation; compatibility policy.
+
+**M. Onboarding &
+Messaging: **Admin onboarding tour, preferences and controlled user-to-user
+administrative messaging.
+
+**N. PWA: **Service
+worker, installability, offline fallback and health checks.
+
+----------------------------
+
+### Requirements from devDoc
+**Key Screens** (from demo-update-prompt.txt):
+1. Public Landing / Investment Opportunities Home ✓ (welcome.blade.php partially exists)
+2. Opportunity Search & Advanced Filters (NOT IMPLEMENTED)
+3. Opportunity Detail (NOT IMPLEMENTED)
+4. Opportunity Comparison (NOT IMPLEMENTED)
+5. Interactive Investment Map (Template mockup in welcome.blade.php)
+6. District Directory (NOT IMPLEMENTED)
+7. District Detail (NOT IMPLEMENTED)
+8. Investor Inquiry Form (NOT IMPLEMENTED)
+9. Admin Dashboard (NOT IMPLEMENTED)
+
+
