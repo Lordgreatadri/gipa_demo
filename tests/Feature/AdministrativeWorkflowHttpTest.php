@@ -89,7 +89,7 @@ class AdministrativeWorkflowHttpTest extends TestCase
             ->assertSee('Opportunity overview')
             ->assertSee('GHS 1.5M')
             ->assertSee('Add opportunity')
-            ->assertSee(route('staff.reference-data.index'))
+            ->assertSee(route('staff.opportunities.create'))
             ->assertSee(route('staff.opportunities.edit', $opportunity));
     }
 

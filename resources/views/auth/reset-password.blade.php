@@ -18,5 +18,5 @@
         <x-password-field name="password_confirmation" label="Confirm password" autocomplete="new-password" />
         <button class="button button--gold" type="submit">Update password</button>
     </form>
-    <a class="login-help" href="{{ route('login') }}">Return to sign in</a>
+    <a class="login-help" href="{{ route($portal === 'staff' ? 'staff.login' : 'login') }}">Return to sign in</a>
 </x-auth-layout>
