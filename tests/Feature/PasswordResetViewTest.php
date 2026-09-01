@@ -39,4 +39,19 @@ class PasswordResetViewTest extends TestCase
             ->assertSee(route('staff.login.store'))
             ->assertSee('data-password-toggle', false);
     }
+
+    public function test_staff_password_pages_return_to_the_staff_login(): void
+    {
+        $this->get(route('password.request', ['portal' => 'staff']))
+            ->assertOk()
+            ->assertSee(route('staff.login'));
+
+        $this->get(route('password.reset', [
+            'token' => 'test-token',
+            'email' => 'staff@example.test',
+            'portal' => 'staff',
+        ]))
+            ->assertOk()
+            ->assertSee(route('staff.login'));
+    }
 }

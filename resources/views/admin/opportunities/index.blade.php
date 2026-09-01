@@ -1,5 +1,5 @@
 <x-admin-layout title="Opportunity management">
-    <div class="admin-page-heading"><div><p class="admin-kicker">Content and governance</p><h1>Opportunities</h1><p>Review lifecycle state, assignment and SLA position across the investment pipeline.</p></div>@can('opportunities.submit')<a class="button button--gold" href="{{ route('staff.reference-data.index') }}">Add opportunity</a>@endcan</div>
+    <div class="admin-page-heading"><div><p class="admin-kicker">Content and governance</p><h1>Opportunities</h1><p>Review lifecycle state, assignment and SLA position across the investment pipeline.</p></div>@can('opportunities.submit')<a class="button button--gold" href="{{ route('staff.opportunities.create') }}">Add opportunity</a>@endcan</div>
     <section class="metric-grid" aria-label="Opportunity overview">
         @foreach([
             ['label'=>'Opportunities','value'=>number_format($metrics['total']),'note'=>'Pipeline total','tone'=>'green'],

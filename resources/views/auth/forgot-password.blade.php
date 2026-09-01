@@ -16,5 +16,5 @@
         </label>
         <button class="button button--gold" type="submit">Send reset link</button>
     </form>
-    <a class="login-help" href="{{ route('login') }}">Return to sign in</a>
+    <a class="login-help" href="{{ route($portal === 'staff' ? 'staff.login' : 'login') }}">Return to sign in</a>
 </x-auth-layout>
