@@ -24,3 +24,5 @@ Homestead.yaml
 Thumbs.db
 /pro-docs
 /dev-Docs
+/storage/app/certificates/keys/*.pem
+/storage/app/private/certificates/keys/*.pem

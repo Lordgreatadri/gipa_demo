@@ -31,5 +31,10 @@ class PublicPlatformTest extends TestCase
         $this->assertFileExists(public_path('sw.js'));
         $this->assertFileExists(public_path('offline.html'));
         $this->assertFileExists(public_path('icons/iomp-icon.svg'));
+        $serviceWorker = file_get_contents(public_path('sw.js'));
+        $this->assertStringContainsString("'/api'", $serviceWorker);
+        $this->assertStringContainsString("'/c/'", $serviceWorker);
+        $this->assertStringContainsString("'/portal'", $serviceWorker);
+        $this->assertStringContainsString("'/staff'", $serviceWorker);
     }
 }

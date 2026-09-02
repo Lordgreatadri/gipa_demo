@@ -2,8 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Certificate;
+use App\Models\CertificateVerification;
+use App\Models\District;
+use App\Models\InvestorInquiry;
 use App\Models\InvestorProfile;
 use App\Models\Opportunity;
+use App\Models\Region;
+use App\Models\StaffDistrictAssignment;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -87,6 +93,26 @@ class User extends Authenticatable implements MustVerifyEmail
     public function investorProfile(): HasOne
     {
         return $this->hasOne(InvestorProfile::class);
+    }
+
+    public function districtAssignments(): HasMany
+    {
+        return $this->hasMany(StaffDistrictAssignment::class);
+    }
+
+    public function assignedDistrictAssignments(): HasMany
+    {
+        return $this->hasMany(StaffDistrictAssignment::class, 'assigned_by');
+    }
+
+    public function issuedCertificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class, 'issued_by');
+    }
+
+    public function certificateVerifications(): HasMany
+    {
+        return $this->hasMany(CertificateVerification::class, 'officer_id');
     }
 
     public function createdRegions(): HasMany

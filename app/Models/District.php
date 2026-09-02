@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Certificate;
 use App\Models\DistrictWorkflowEvent;
 use App\Models\Opportunity;
 use App\Models\Region;
+use App\Models\StaffDistrictAssignment;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -91,6 +93,16 @@ class District extends Model
     public function opportunities(): HasMany
     {
         return $this->hasMany(Opportunity::class);
+    }
+
+    public function staffAssignments(): HasMany
+    {
+        return $this->hasMany(StaffDistrictAssignment::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
     }
 
     public function workflowEvents(): HasMany

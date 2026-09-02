@@ -1,0 +1,155 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Jobs\GenerateCertificateArtifacts;
+use App\Models\Certificate;
+use App\Models\CertificateType;
+use App\Models\District;
+use App\Models\Region;
+use App\Models\User;
+use App\Services\CertificateIntegrityService;
+use App\Services\CertificateWorkflowService;
+use App\Support\CertificatePermissions;
+use Database\Seeders\WorkflowPermissionSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use LogicException;
+use RuntimeException;
+use Spatie\Activitylog\Models\Activity;
+use Tests\Support\CreatesCertificateSigningKeys;
+use Tests\TestCase;
+
+class CertificateIntegrityTest extends TestCase
+{
+    use CreatesCertificateSigningKeys, RefreshDatabase;
+
+    private array $keyFiles = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(WorkflowPermissionSeeder::class);
+        $this->configureKey('test-key-1');
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->keyFiles as $file) {
+            @unlink($file);
+        }
+
+        parent::tearDown();
+    }
+
+    public function test_issuance_signs_an_immutable_snapshot_and_records_audit_history(): void
+    {
+        [$certificate, $issuer] = $this->certificateContext();
+
+        $result = app(CertificateWorkflowService::class)->issue($certificate, $issuer);
+
+        $this->assertSame(Certificate::STATUS_ACTIVE, $result->certificate->status);
+        $this->assertSame(hash('sha256', $result->publicToken), $result->certificate->public_token_hash);
+        $this->assertSame(CertificateIntegrityService::RESULT_AUTHENTIC, app(CertificateIntegrityService::class)->result($result->certificate));
+        $this->assertSame(['issued'], $result->certificate->lifecycleEvents()->pluck('action')->all());
+        $this->assertSame(1, Activity::query()->where('subject_type', Certificate::class)->count());
+        $activity = Activity::query()->where('subject_type', Certificate::class)->firstOrFail();
+        $this->assertNull($activity->properties->get('before')['issued_at']);
+        $this->assertNull($activity->properties->get('before')['issued_by']);
+        $this->assertNotNull($activity->properties->get('after')['issued_at']);
+        $this->assertSame($issuer->id, $activity->properties->get('after')['issued_by']);
+
+        $this->expectException(LogicException::class);
+        $result->certificate->update(['holder_name_snapshot' => 'Altered holder']);
+    }
+
+    public function test_payload_tampering_is_detected(): void
+    {
+        [$certificate, $issuer] = $this->certificateContext();
+        $issued = app(CertificateWorkflowService::class)->issue($certificate, $issuer)->certificate;
+        $payload = $issued->signed_payload;
+        $payload['holder_name'] = 'Counterfeit holder';
+        DB::table('certificates')->where('id', $issued->id)->update(['signed_payload' => json_encode($payload)]);
+
+        $this->assertSame(
+            CertificateIntegrityService::RESULT_SIGNATURE_INVALID,
+            app(CertificateIntegrityService::class)->result($issued->fresh()),
+        );
+    }
+
+    public function test_retired_public_key_still_verifies_after_active_key_rotation(): void
+    {
+        [$certificate, $issuer] = $this->certificateContext();
+        $issued = app(CertificateWorkflowService::class)->issue($certificate, $issuer)->certificate;
+        $this->configureKey('test-key-2', true);
+
+        $this->assertSame('test-key-1', $issued->signing_key_id);
+        $this->assertSame(CertificateIntegrityService::RESULT_AUTHENTIC, app(CertificateIntegrityService::class)->result($issued->fresh()));
+    }
+
+    public function test_artifact_job_writes_private_qr_and_pdf_files(): void
+    {
+        Storage::fake('local');
+        [$certificate, $issuer] = $this->certificateContext();
+        $issued = app(CertificateWorkflowService::class)->issue($certificate, $issuer)->certificate;
+
+        (new GenerateCertificateArtifacts($issued->id))->handle();
+
+        $issued->refresh();
+        $this->assertSame(Certificate::ARTIFACT_READY, $issued->artifact_status);
+        $this->assertNotNull($issued->artifacts_generated_at);
+        Storage::disk('local')->assertExists($issued->qr_code_path);
+        Storage::disk('local')->assertExists($issued->pdf_path);
+        $this->assertGreaterThan(100, Storage::disk('local')->size($issued->qr_code_path));
+        $this->assertGreaterThan(1000, Storage::disk('local')->size($issued->pdf_path));
+    }
+
+    public function test_unsupported_algorithm_fails_closed_without_issuing(): void
+    {
+        [$certificate, $issuer] = $this->certificateContext();
+        config()->set('iomp.certificates.algorithm', 'UNAPPROVED');
+
+        try {
+            app(CertificateWorkflowService::class)->issue($certificate, $issuer);
+            $this->fail('Issuance should reject an unsupported algorithm.');
+        } catch (RuntimeException) {
+            $this->assertSame(Certificate::STATUS_DRAFT, $certificate->fresh()->status);
+            $this->assertDatabaseCount('certificate_lifecycle_events', 0);
+        }
+    }
+
+    public function test_issued_certificate_cannot_be_deleted(): void
+    {
+        [$certificate, $issuer] = $this->certificateContext();
+        $issued = app(CertificateWorkflowService::class)->issue($certificate, $issuer)->certificate;
+
+        $this->expectException(LogicException::class);
+        $issued->delete();
+    }
+
+    private function certificateContext(): array
+    {
+        $issuer = User::factory()->create(['account_type' => User::ACCOUNT_STAFF]);
+        $issuer->givePermissionTo(CertificatePermissions::ISSUE);
+        $region = Region::create(['code' => 'GAR', 'name' => 'Greater Accra']);
+        $district = District::create(['region_id' => $region->id, 'code' => 'AMA', 'name' => 'Accra Metropolitan']);
+        $type = CertificateType::create(['code' => 'INVESTMENT', 'name' => 'Investment Registration Certificate', 'default_validity_months' => 12]);
+        $certificate = Certificate::create([
+            'certificate_number' => 'GIPA-CERT-2026-000001',
+            'certificate_type_id' => $type->id,
+            'district_id' => $district->id,
+            'holder_name_snapshot' => 'Akwaaba Industries Limited',
+            'organization_name_snapshot' => 'Akwaaba Industries Limited',
+            'created_by' => $issuer->id,
+            'updated_by' => $issuer->id,
+        ]);
+
+        return [$certificate, $issuer];
+    }
+
+    private function configureKey(string $keyId, bool $keepExisting = false): void
+    {
+        $this->configureCertificateSigningKey($keyId, $keepExisting);
+    }
+}

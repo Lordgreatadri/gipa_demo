@@ -1,0 +1,14 @@
+<x-admin-layout title="Certificate overview">
+    <div class="admin-page-heading"><div><p class="admin-kicker">Component 2</p><h1>Certificate overview</h1><p>Monitor registry scale, regional coverage, validity and expiry exposure within your authorized districts.</p></div><a class="button button--outline" href="{{ route('staff.certificates.index') }}">Open registry list</a></div>
+    <section class="metric-widget-grid" aria-label="Certificate decision indicators">
+        <x-metric-widget label="Registry total" :value="number_format($metrics->total)" note="Authorized records" icon="files" tone="green" />
+        <x-metric-widget label="Active" :value="number_format($metrics->active)" note="Valid and currently issued" icon="badge-check" tone="blue" />
+        <x-metric-widget label="Expired" :value="number_format($metrics->expired)" note="Past certificate expiry" icon="calendar-x" tone="red" />
+        <x-metric-widget label="Expiring soon" :value="number_format($metrics->expiring)" note="Within the next 30 days" icon="calendar-clock" tone="gold" />
+    </section>
+    <section class="dashboard-chart-grid" aria-label="Certificate decision analytics">
+        <x-chart-panel title="Regional registry coverage" description="Total and active certificates by region within the authorized view." type="bar" :labels="$charts['regional']['labels']" :datasets="[['label'=>'Registry total','data'=>$charts['regional']['total']],['label'=>'Active','data'=>$charts['regional']['active']]]" :summary="'Regional certificate figures: '.collect($charts['regional']['labels'])->map(fn($label, $index) => $label.' total '.$charts['regional']['total'][$index].', active '.$charts['regional']['active'][$index])->join('; ')" wide />
+        <x-chart-panel title="Validity composition" description="Operational composition including derived expiry state." type="doughnut" :labels="$charts['status']['labels']" :datasets="[['label'=>'Certificates','data'=>$charts['status']['values']]]" :summary="'Certificate validity figures: '.collect($charts['status']['labels'])->zip($charts['status']['values'])->map(fn($item) => $item[0].' '.$item[1])->join(', ')" />
+        <x-chart-panel :title="'Expired by quarter, '.$charts['expiries']['year']" description="Certificates whose validity ended in each calendar quarter." type="bar" :labels="$charts['expiries']['labels']" :datasets="[['label'=>'Expired certificates','data'=>$charts['expiries']['values']]]" :summary="'Quarterly certificate expiries: '.collect($charts['expiries']['labels'])->zip($charts['expiries']['values'])->map(fn($item) => $item[0].' '.$item[1])->join(', ')" />
+    </section>
+</x-admin-layout>

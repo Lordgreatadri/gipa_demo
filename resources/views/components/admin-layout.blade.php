@@ -55,6 +55,16 @@
                             </div>
                         </details>
                     @endcan
+                    @can('certificates.view')
+                        <details class="admin-nav-group" data-nav-group="certificates" @if(request()->routeIs('staff.certificates.*')) open @endif>
+                            <summary><i data-lucide="badge-check" aria-hidden="true"></i><span>Certificates</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+                            <div class="admin-nav-group__items">
+                                <a href="{{ route('staff.certificates.overview') }}" @class(['is-current' => request()->routeIs('staff.certificates.overview')])>Overview</a>
+                                <a href="{{ route('staff.certificates.index') }}" @class(['is-current' => request()->routeIs('staff.certificates.index', 'staff.certificates.show')])>Registry list</a>
+                                @can('certificates.issue')<a href="{{ route('staff.certificates.create') }}" @class(['is-current' => request()->routeIs('staff.certificates.create')])>Prepare certificate</a>@endcan
+                            </div>
+                        </details>
+                    @endcan
                     <details class="admin-nav-group" data-nav-group="notifications" @if(request()->routeIs('staff.notifications.*')) open @endif>
                         <summary><i data-lucide="bell" aria-hidden="true"></i><span>Notifications</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
                         <div class="admin-nav-group__items">
@@ -68,6 +78,7 @@
                             <div class="admin-nav-group__items">
                                 <a href="{{ route('staff.users.overview') }}" @class(['is-current' => request()->routeIs('staff.users.overview')])>Overview</a>
                                 <a href="{{ route('staff.users.staff') }}" @class(['is-current' => request()->routeIs('staff.users.staff')])>Staff list</a>
+                                <a href="{{ route('staff.certificate-assignments.index') }}" @class(['is-current' => request()->routeIs('staff.certificate-assignments.*')])>District assignments</a>
                                 <a href="{{ route('staff.users.roles') }}" @class(['is-current' => request()->routeIs('staff.users.roles')])>Roles</a>
                                 <a href="{{ route('staff.users.permissions') }}" @class(['is-current' => request()->routeIs('staff.users.permissions')])>Permissions</a>
                             </div>

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Support\CertificatePermissions;
 use App\Support\InvestorPermissions;
 use App\Support\WorkflowPermissions;
 use Illuminate\Database\Seeder;
@@ -15,11 +16,11 @@ class WorkflowPermissionSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach ([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL] as $permission) {
+        foreach ([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL, ...CertificatePermissions::ALL] as $permission) {
             Permission::findOrCreate($permission, 'web');
         }
 
-        Role::findOrCreate('Super Administrator', 'web')->syncPermissions([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL]);
+        Role::findOrCreate('Super Administrator', 'web')->syncPermissions([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL, ...CertificatePermissions::ALL]);
         Role::findOrCreate('Content / Data Manager', 'web')->syncPermissions([
             WorkflowPermissions::DISTRICT_SUBMIT,
             WorkflowPermissions::OPPORTUNITY_SUBMIT,
@@ -29,6 +30,8 @@ class WorkflowPermissionSeeder extends Seeder
         Role::findOrCreate('District Officer', 'web')->syncPermissions([
             WorkflowPermissions::DISTRICT_SUBMIT,
             WorkflowPermissions::OPPORTUNITY_SUBMIT,
+            CertificatePermissions::VIEW,
+            CertificatePermissions::VERIFY,
         ]);
         Role::findOrCreate('Field Agent', 'web')->syncPermissions([
             WorkflowPermissions::DISTRICT_SUBMIT,
@@ -43,6 +46,12 @@ class WorkflowPermissionSeeder extends Seeder
             InvestorPermissions::REVIEW,
             InvestorPermissions::REASSIGN,
             InvestorPermissions::COMPLIANCE_MANAGE,
+            CertificatePermissions::VIEW,
+            CertificatePermissions::ISSUE,
+            CertificatePermissions::SUSPEND,
+            CertificatePermissions::REVOKE,
+            CertificatePermissions::EVIDENCE_VIEW,
+            CertificatePermissions::AUDIT_VIEW,
         ]);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

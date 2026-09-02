@@ -1,17 +1,17 @@
 import Chart from 'chart.js/auto';
 import {
-	Activity, BadgeCheck, Bell, BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, CircleDollarSign,
-	ClockAlert, createIcons, Eye, EyeOff, Gauge, Landmark, Layers3, MapPinned,
-	Route, TriangleAlert, UsersRound,
+	Activity, BadgeCheck, Bell, BriefcaseBusiness, CalendarClock, CalendarX, ChartNoAxesCombined,
+	ChevronDown, CircleDollarSign, ClockAlert, createIcons, Eye, EyeOff, Files, Gauge, Landmark,
+	Layers3, LayoutDashboard, MapPinned, Route, Search, ShieldAlert, TriangleAlert, UsersRound,
 } from 'lucide';
 
 import './bootstrap';
 
 createIcons({
 	icons: {
-		Activity, BadgeCheck, Bell, BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, CircleDollarSign,
-		ClockAlert, Eye, EyeOff, Gauge, Landmark, Layers3, MapPinned, Route,
-		TriangleAlert, UsersRound,
+		Activity, BadgeCheck, Bell, BriefcaseBusiness, CalendarClock, CalendarX, ChartNoAxesCombined,
+		ChevronDown, CircleDollarSign, ClockAlert, Eye, EyeOff, Files, Gauge, Landmark,
+		Layers3, LayoutDashboard, MapPinned, Route, Search, ShieldAlert, TriangleAlert, UsersRound,
 	},
 });
 
@@ -57,7 +57,9 @@ document.querySelectorAll('[data-chart-panel]').forEach((panel) => {
 			scales: isCircular ? undefined : {
 				x: { grid: { display: false }, ticks: { color: '#65736d', maxRotation: 35, minRotation: 0, font: { family: 'DM Sans', size: 10 } } },
 				y: { beginAtZero: true, grid: { color: 'rgba(101,115,109,.14)' }, ticks: { color: '#65736d', precision: 0, font: { family: 'DM Sans', size: 10 } } },
-				y1: datasets.some((dataset) => dataset.yAxisID === 'y1') ? { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#65736d', font: { family: 'DM Sans', size: 10 } } } : undefined,
+				...(datasets.some((dataset) => dataset.yAxisID === 'y1') ? {
+					y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#65736d', font: { family: 'DM Sans', size: 10 } } },
+				} : {}),
 			},
 		},
 	});

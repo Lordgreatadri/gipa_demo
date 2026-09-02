@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\District;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -56,6 +57,16 @@ class DefaultRoleUserSeeder extends Seeder
 
             $role = Role::findOrCreate($account['role'], 'web');
             $user->syncRoles([$role]);
+        }
+
+        $districtOfficerAccount = collect($configuration['roles'])->firstWhere('role', 'District Officer');
+        $districtOfficer = User::query()->where('email', $districtOfficerAccount['email'])->firstOrFail();
+        $district = District::query()->orderBy('id')->first();
+        if ($district) {
+            $districtOfficer->districtAssignments()->firstOrCreate(
+                ['district_id' => $district->id, 'starts_at' => now()->startOfDay()],
+                ['is_primary' => true],
+            );
         }
     }
 }
