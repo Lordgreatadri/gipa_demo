@@ -17,11 +17,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
+use Tests\Support\CreatesCertificateSigningKeys;
 use Tests\TestCase;
 
 class CertificateVerificationHttpTest extends TestCase
 {
-    use RefreshDatabase;
+    use CreatesCertificateSigningKeys, RefreshDatabase;
 
     private array $keyFiles = [];
 
@@ -213,22 +214,6 @@ class CertificateVerificationHttpTest extends TestCase
 
     private function configureKey(): void
     {
-        $opensslConfig = dirname(PHP_BINARY).DIRECTORY_SEPARATOR.'extras'.DIRECTORY_SEPARATOR.'ssl'.DIRECTORY_SEPARATOR.'openssl.cnf';
-        $this->assertFileExists($opensslConfig);
-        $key = openssl_pkey_new(['config' => $opensslConfig, 'private_key_type' => OPENSSL_KEYTYPE_RSA, 'private_key_bits' => 2048]);
-        $this->assertNotFalse($key);
-        $this->assertTrue(openssl_pkey_export($key, $privatePem, null, ['config' => $opensslConfig]));
-        $details = openssl_pkey_get_details($key);
-        $this->assertNotFalse($details);
-        $privatePath = tempnam(sys_get_temp_dir(), 'iomp-private-');
-        $publicPath = tempnam(sys_get_temp_dir(), 'iomp-public-');
-        file_put_contents($privatePath, $privatePem);
-        file_put_contents($publicPath, $details['key']);
-        $this->keyFiles = [$privatePath, $publicPath];
-        config()->set('iomp.certificates.active_key_id', 'http-test-key');
-        config()->set('iomp.certificates.algorithm', 'RSA-SHA256');
-        config()->set('iomp.certificates.keys', [
-            'http-test-key' => ['private_key_path' => $privatePath, 'public_key_path' => $publicPath],
-        ]);
+        $this->configureCertificateSigningKey('http-test-key');
     }
 }

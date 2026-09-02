@@ -18,11 +18,12 @@ use Illuminate\Support\Facades\Storage;
 use LogicException;
 use RuntimeException;
 use Spatie\Activitylog\Models\Activity;
+use Tests\Support\CreatesCertificateSigningKeys;
 use Tests\TestCase;
 
 class CertificateIntegrityTest extends TestCase
 {
-    use RefreshDatabase;
+    use CreatesCertificateSigningKeys, RefreshDatabase;
 
     private array $keyFiles = [];
 
@@ -149,28 +150,6 @@ class CertificateIntegrityTest extends TestCase
 
     private function configureKey(string $keyId, bool $keepExisting = false): void
     {
-        $opensslConfig = dirname(PHP_BINARY).DIRECTORY_SEPARATOR.'extras'.DIRECTORY_SEPARATOR.'ssl'.DIRECTORY_SEPARATOR.'openssl.cnf';
-        $this->assertFileExists($opensslConfig, 'The PHP OpenSSL configuration is required to generate ephemeral test keys.');
-        $key = openssl_pkey_new([
-            'config' => $opensslConfig,
-            'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            'private_key_bits' => 2048,
-        ]);
-        $this->assertNotFalse($key, 'Ephemeral OpenSSL key generation failed.');
-        $this->assertTrue(openssl_pkey_export($key, $privatePem, null, ['config' => $opensslConfig]));
-        $details = openssl_pkey_get_details($key);
-        $this->assertNotFalse($details, 'Ephemeral public key export failed.');
-        $publicPem = $details['key'];
-        $privatePath = tempnam(sys_get_temp_dir(), 'iomp-private-');
-        $publicPath = tempnam(sys_get_temp_dir(), 'iomp-public-');
-        file_put_contents($privatePath, $privatePem);
-        file_put_contents($publicPath, $publicPem);
-        $this->keyFiles = [...$this->keyFiles, $privatePath, $publicPath];
-
-        $keys = $keepExisting ? config('iomp.certificates.keys', []) : [];
-        $keys[$keyId] = ['private_key_path' => $privatePath, 'public_key_path' => $publicPath];
-        config()->set('iomp.certificates.keys', $keys);
-        config()->set('iomp.certificates.active_key_id', $keyId);
-        config()->set('iomp.certificates.algorithm', 'RSA-SHA256');
+        $this->configureCertificateSigningKey($keyId, $keepExisting);
     }
 }
