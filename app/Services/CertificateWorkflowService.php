@@ -30,6 +30,7 @@ class CertificateWorkflowService
 
             $token = Str::random(64);
             $issuedAt = now();
+            $before = $certificate->only(['status', 'issued_at', 'issued_by', 'version']);
             $certificate->forceFill([
                 'issued_at' => $issuedAt,
                 'expires_at' => $certificate->expires_at ?? $this->defaultExpiry($certificate, $issuedAt),
@@ -39,7 +40,6 @@ class CertificateWorkflowService
             $payload = $this->canonicalizer->payload($certificate);
             $canonical = $this->canonicalizer->canonicalize($payload);
             $signature = $this->signer->sign($canonical);
-            $before = $certificate->only(['status', 'issued_at', 'issued_by', 'version']);
 
             $certificate->forceFill([
                 'public_token_hash' => hash('sha256', $token),

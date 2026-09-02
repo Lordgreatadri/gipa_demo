@@ -53,6 +53,11 @@ class CertificateIntegrityTest extends TestCase
         $this->assertSame(CertificateIntegrityService::RESULT_AUTHENTIC, app(CertificateIntegrityService::class)->result($result->certificate));
         $this->assertSame(['issued'], $result->certificate->lifecycleEvents()->pluck('action')->all());
         $this->assertSame(1, Activity::query()->where('subject_type', Certificate::class)->count());
+        $activity = Activity::query()->where('subject_type', Certificate::class)->firstOrFail();
+        $this->assertNull($activity->properties->get('before')['issued_at']);
+        $this->assertNull($activity->properties->get('before')['issued_by']);
+        $this->assertNotNull($activity->properties->get('after')['issued_at']);
+        $this->assertSame($issuer->id, $activity->properties->get('after')['issued_by']);
 
         $this->expectException(LogicException::class);
         $result->certificate->update(['holder_name_snapshot' => 'Altered holder']);

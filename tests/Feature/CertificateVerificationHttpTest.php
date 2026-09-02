@@ -12,6 +12,7 @@ use App\Services\CertificateWorkflowService;
 use App\Support\CertificatePermissions;
 use Database\Seeders\WorkflowPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -42,6 +43,8 @@ class CertificateVerificationHttpTest extends TestCase
 
     public function test_public_verification_exposes_only_the_approved_online_snapshot(): void
     {
+        $checkedAt = Carbon::parse('2026-09-02 10:15:30', 'UTC');
+        $this->travelTo($checkedAt);
         [$certificate, $token] = $this->issuedCertificate();
 
         $this->get(route('certificates.verify', $token))
@@ -61,10 +64,10 @@ class CertificateVerificationHttpTest extends TestCase
         $unknown = str_repeat('A', 64);
         $this->getJson(route('api.v1.certificates.verify', $unknown))
             ->assertNotFound()
-            ->assertExactJson(['data' => ['result' => 'not_found', 'checked_at' => now()->toIso8601String()]]);
+            ->assertExactJson(['data' => ['result' => 'not_found', 'checked_at' => $checkedAt->toIso8601String()]]);
         $this->getJson(route('api.v1.certificates.verify', 'malformed-token'))
             ->assertNotFound()
-            ->assertExactJson(['data' => ['result' => 'not_found', 'checked_at' => now()->toIso8601String()]]);
+            ->assertExactJson(['data' => ['result' => 'not_found', 'checked_at' => $checkedAt->toIso8601String()]]);
     }
 
     public function test_assigned_officer_can_verify_once_and_other_district_is_denied(): void
@@ -94,6 +97,25 @@ class CertificateVerificationHttpTest extends TestCase
             'officer_decision' => 'valid',
             'idempotency_key' => $key,
         ]);
+    }
+
+    public function test_different_officers_may_reuse_the_same_idempotency_key(): void
+    {
+        [$certificate] = $this->issuedCertificate();
+        $officers = [$this->districtOfficer(), $this->districtOfficer()];
+
+        foreach ($officers as $officer) {
+            $officer->districtAssignments()->create([
+                'district_id' => $certificate->district_id,
+                'starts_at' => now()->subDay(),
+            ]);
+            $this->actingAs($officer)->post(route('staff.certificates.verify', $certificate), [
+                'officer_decision' => 'valid',
+                'idempotency_key' => '5c69fdb5-f947-46e6-a68e-52cb465bf076',
+            ])->assertRedirect();
+        }
+
+        $this->assertDatabaseCount('certificate_verifications', 2);
     }
 
     public function test_certificate_registry_is_permission_scoped_paginated_and_query_bounded(): void
