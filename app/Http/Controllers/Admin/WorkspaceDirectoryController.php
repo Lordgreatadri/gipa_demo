@@ -10,6 +10,7 @@ use App\Models\InvestorProfile;
 use App\Models\Opportunity;
 use App\Models\Region;
 use App\Models\User;
+use App\Support\InvestorPermissions;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Permission;
@@ -47,8 +48,10 @@ class WorkspaceDirectoryController extends Controller
         return $this->page('regions', ['regions' => Region::query()->withCount(['districts', 'districts as published_districts_count' => fn ($query) => $query->where('workflow_status', District::STATUS_PUBLISHED)])->orderBy('name')->get()]);
     }
 
-    public function investments(): View
+    public function investments(Request $request): View
     {
+        abort_unless($request->user()->can(InvestorPermissions::VIEW), 403);
+
         return $this->page('investments', [
             'investors' => InvestorProfile::query()->count(),
             'applications' => InvestorOnboardingCase::query()->count(),
@@ -59,22 +62,52 @@ class WorkspaceDirectoryController extends Controller
 
     public function inquiries(Request $request): View
     {
-        abort_unless($request->user()->can('investors.view'), 403);
+        abort_unless($request->user()->can(InvestorPermissions::VIEW), 403);
 
         return $this->page('inquiries', ['inquiries' => InvestorInquiry::query()->with(['opportunity:id,uuid,title', 'assignee:id,name'])->latest()->paginate(25)]);
     }
 
-    public function notifications(Request $request, bool $list = false): View
+    public function notificationsOverview(Request $request): View
     {
-        return $this->page($list ? 'notification-list' : 'notifications', [
+        return $this->notifications($request, 'notifications');
+    }
+
+    public function notificationsIndex(Request $request): View
+    {
+        return $this->notifications($request, 'notification-list');
+    }
+
+    public function usersOverview(Request $request): View
+    {
+        return $this->users($request, 'users');
+    }
+
+    public function usersStaff(Request $request): View
+    {
+        return $this->users($request, 'staff');
+    }
+
+    public function usersRoles(Request $request): View
+    {
+        return $this->users($request, 'roles');
+    }
+
+    public function usersPermissions(Request $request): View
+    {
+        return $this->users($request, 'permissions');
+    }
+
+    private function notifications(Request $request, string $page): View
+    {
+        return $this->page($page, [
             'notifications' => $request->user()->notifications()->latest()->paginate(25),
             'unread' => $request->user()->unreadNotifications()->count(),
         ]);
     }
 
-    public function users(string $page): View
+    private function users(Request $request, string $page): View
     {
-        abort_unless(auth()->user()->hasRole('Super Administrator'), 403);
+        abort_unless($request->user()->hasRole('Super Administrator'), 403);
 
         return $this->page($page, [
             'staff' => User::query()->where('account_type', User::ACCOUNT_STAFF)->with('roles')->orderBy('name')->get(),

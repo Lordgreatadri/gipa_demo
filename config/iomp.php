@@ -8,6 +8,7 @@ return [
     ],
 
     'demo_users' => [
+        'enabled' => (bool) env('IOMP_SEED_DEMO_DATA', false),
         'staff_password' => env('DEMO_STAFF_PASSWORD'),
         'investor_password' => env('DEMO_INVESTOR_PASSWORD'),
         'investor_email_pattern' => env('DEMO_INVESTOR_EMAIL_PATTERN'),

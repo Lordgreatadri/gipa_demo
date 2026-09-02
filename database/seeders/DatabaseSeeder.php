@@ -19,10 +19,15 @@ class DatabaseSeeder extends Seeder
             WorkflowPermissionSeeder::class,
             InvestorKycReferenceSeeder::class,
             DefaultSystemUserSeeder::class,
-            DefaultRoleUserSeeder::class,
             GhanaDistrictRegistrySeeder::class,
             IompPrototypeSeeder::class,
-            InvestorScenarioSeeder::class,
         ]);
+
+        if (config('iomp.demo_users.enabled')) {
+            $this->call([
+                DefaultRoleUserSeeder::class,
+                InvestorScenarioSeeder::class,
+            ]);
+        }
     }
 }

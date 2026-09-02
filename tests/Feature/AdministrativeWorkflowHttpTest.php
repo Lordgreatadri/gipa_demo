@@ -9,6 +9,7 @@ use App\Models\Region;
 use App\Models\Sector;
 use App\Models\SubSector;
 use App\Models\User;
+use App\Support\InvestorPermissions;
 use App\Support\WorkflowPermissions;
 use Database\Seeders\GhanaDistrictRegistrySeeder;
 use Database\Seeders\WorkflowPermissionSeeder;
@@ -58,6 +59,20 @@ class AdministrativeWorkflowHttpTest extends TestCase
         $investor = User::factory()->create();
 
         $this->actingAs($investor)->get(route('staff.dashboard'))->assertForbidden();
+    }
+
+    public function test_investments_overview_requires_investor_view_permission(): void
+    {
+        $staff = User::factory()->create(['account_type' => User::ACCOUNT_STAFF]);
+
+        $this->actingAs($staff)->get(route('staff.investments.overview'))->assertForbidden();
+
+        $staff->givePermissionTo(InvestorPermissions::VIEW);
+
+        $this->actingAs($staff)
+            ->get(route('staff.investments.overview'))
+            ->assertOk()
+            ->assertSee('Investments overview');
     }
 
     public function test_staff_indexes_show_overview_metrics_and_draft_actions(): void

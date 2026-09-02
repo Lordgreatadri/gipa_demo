@@ -81,7 +81,7 @@ Status reflects verified repository behavior. A checked item is implemented and 
 
 These programme components are named in the broader concept material but are not defined as completed IOMP prototype modules in the current implementation.
 
-- [x] Source-reviewed Component 1 architecture and delivery gates documented in `dev-Docs/investor-onboarding-architecture.md`
+- [x] Investor onboarding architecture implemented through normalized profiles, KYC documents, workflow cases, immutable events, SLA tracking and permission-gated review
 - [x] Investor profile creation and resumable backfill
 - [x] KYC document catalogue, private quarantine storage, checksums and authorized downloads
 - [x] Investor onboarding submission, staff review, action-required, approval and rejection workflow

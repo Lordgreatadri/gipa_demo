@@ -14,7 +14,6 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\InvestorPortalController;
 use App\Http\Controllers\PublicPortal\OpportunityController;
 use App\Services\PublicOpportunityFilters;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function (PublicOpportunityFilters $filters) {
@@ -64,12 +63,12 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'staff'])->group(fun
     Route::get('/regions', [WorkspaceDirectoryController::class, 'regions'])->name('regions.index');
     Route::get('/investment-workspace', [WorkspaceDirectoryController::class, 'investments'])->name('investments.overview');
     Route::get('/inquiries', [WorkspaceDirectoryController::class, 'inquiries'])->name('inquiries.index');
-    Route::get('/notifications', fn (Request $request) => app(WorkspaceDirectoryController::class)->notifications($request))->name('notifications.overview');
-    Route::get('/notifications/list', fn (Request $request) => app(WorkspaceDirectoryController::class)->notifications($request, true))->name('notifications.index');
-    Route::get('/users', fn () => app(WorkspaceDirectoryController::class)->users('users'))->name('users.overview');
-    Route::get('/users/staff', fn () => app(WorkspaceDirectoryController::class)->users('staff'))->name('users.staff');
-    Route::get('/users/roles', fn () => app(WorkspaceDirectoryController::class)->users('roles'))->name('users.roles');
-    Route::get('/users/permissions', fn () => app(WorkspaceDirectoryController::class)->users('permissions'))->name('users.permissions');
+    Route::get('/notifications', [WorkspaceDirectoryController::class, 'notificationsOverview'])->name('notifications.overview');
+    Route::get('/notifications/list', [WorkspaceDirectoryController::class, 'notificationsIndex'])->name('notifications.index');
+    Route::get('/users', [WorkspaceDirectoryController::class, 'usersOverview'])->name('users.overview');
+    Route::get('/users/staff', [WorkspaceDirectoryController::class, 'usersStaff'])->name('users.staff');
+    Route::get('/users/roles', [WorkspaceDirectoryController::class, 'usersRoles'])->name('users.roles');
+    Route::get('/users/permissions', [WorkspaceDirectoryController::class, 'usersPermissions'])->name('users.permissions');
     Route::get('/reference-data', [OpportunityReferenceDataController::class, 'index'])->name('reference-data.index');
     Route::get('/reference-data/{section}', [OpportunityReferenceDataController::class, 'index'])->name('reference-data.section');
     Route::get('/investors', [AdminInvestorOnboardingController::class, 'index'])->name('investors.index');
