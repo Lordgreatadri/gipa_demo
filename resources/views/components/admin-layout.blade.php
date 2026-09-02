@@ -19,15 +19,60 @@
                     <img src="{{ asset('images/gipa-logo.png') }}" alt="">
                     <span><strong>IOMP</strong><small>Staff workspace</small></span>
                 </a>
-                <nav aria-label="Staff navigation">
-                    <a href="{{ route('staff.dashboard') }}" @class(['is-current' => request()->routeIs('staff.dashboard')])><span aria-hidden="true">01</span> Dashboard</a>
-                    <a href="{{ route('staff.opportunities.index') }}" @class(['is-current' => request()->routeIs('staff.opportunities.*')])><span aria-hidden="true">02</span> Opportunities</a>
-                    <a href="{{ route('staff.districts.index') }}" @class(['is-current' => request()->routeIs('staff.districts.*')])><span aria-hidden="true">03</span> Districts</a>
-                    @can('opportunities.submit')<a href="{{ route('staff.reference-data.index') }}" @class(['is-current' => request()->routeIs('staff.reference-data.*')])><span aria-hidden="true">04</span> Reference data</a>@endcan
-                    <span class="admin-nav-label">Oversight</span>
-                    <a href="#"><span aria-hidden="true">05</span> Inquiries <i>Next</i></a>
-                    <a href="#"><span aria-hidden="true">06</span> Audit log <i>Next</i></a>
-                    <a href="#"><span aria-hidden="true">07</span> Reports <i>Next</i></a>
+                <nav class="admin-navigation" aria-label="Staff navigation">
+                    <details class="admin-nav-group" data-nav-group="overview" @if(request()->routeIs('staff.dashboard')) open @endif>
+                        <summary><i data-lucide="layout-dashboard" aria-hidden="true"></i><span>Overview</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+                        <div class="admin-nav-group__items">
+                            <a href="{{ route('staff.dashboard') }}" @class(['is-current' => request()->routeIs('staff.dashboard')])>Dashboard</a>
+                        </div>
+                    </details>
+                    <details class="admin-nav-group" data-nav-group="opportunities" @if(request()->routeIs('staff.opportunity-workspace', 'staff.regions.*', 'staff.opportunities.*', 'staff.districts.*', 'staff.reference-data.*')) open @endif>
+                        <summary><i data-lucide="briefcase-business" aria-hidden="true"></i><span>Opportunities</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+                        <div class="admin-nav-group__items">
+                            <a href="{{ route('staff.opportunity-workspace') }}" @class(['is-current' => request()->routeIs('staff.opportunity-workspace')])>Overview</a>
+                            <a href="{{ route('staff.regions.index') }}" @class(['is-current' => request()->routeIs('staff.regions.*')])>Region list</a>
+                            <a href="{{ route('staff.districts.overview') }}" @class(['is-current' => request()->routeIs('staff.districts.overview')])>District overview</a>
+                            <a href="{{ route('staff.districts.index') }}" @class(['is-current' => request()->routeIs('staff.districts.index', 'staff.districts.show', 'staff.districts.create', 'staff.districts.edit')])>District list</a>
+                            <a href="{{ route('staff.opportunities.overview') }}" @class(['is-current' => request()->routeIs('staff.opportunities.overview')])>Opportunity overview</a>
+                            <a href="{{ route('staff.opportunities.index') }}" @class(['is-current' => request()->routeIs('staff.opportunities.index', 'staff.opportunities.show', 'staff.opportunities.create', 'staff.opportunities.edit')])>Opportunity list</a>
+                            @can('opportunities.submit')
+                                <span class="admin-nav-label">Reference data</span>
+                                <a href="{{ route('staff.reference-data.index') }}" @class(['is-current' => request()->routeIs('staff.reference-data.index')])>Reference overview</a>
+                                <a href="{{ route('staff.reference-data.section', 'sectors') }}" @class(['is-current' => request()->routeIs('staff.reference-data.section') && request()->route('section') === 'sectors'])>Sector list</a>
+                                <a href="{{ route('staff.reference-data.section', 'sub-sectors') }}" @class(['is-current' => request()->routeIs('staff.reference-data.section') && request()->route('section') === 'sub-sectors'])>Sub-sector list</a>
+                                <a href="{{ route('staff.reference-data.section', 'enterprise-types') }}" @class(['is-current' => request()->routeIs('staff.reference-data.section') && request()->route('section') === 'enterprise-types'])>Enterprise type list</a>
+                            @endcan
+                        </div>
+                    </details>
+                    @can('investors.view')
+                        <details class="admin-nav-group" data-nav-group="investments" @if(request()->routeIs('staff.investments.*', 'staff.investors.*', 'staff.inquiries.*')) open @endif>
+                            <summary><i data-lucide="landmark" aria-hidden="true"></i><span>Investments</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+                            <div class="admin-nav-group__items">
+                                <a href="{{ route('staff.investments.overview') }}" @class(['is-current' => request()->routeIs('staff.investments.*')])>Overview</a>
+                                <a href="{{ route('staff.investors.overview') }}" @class(['is-current' => request()->routeIs('staff.investors.overview')])>Investor overview</a>
+                                <a href="{{ route('staff.investors.index') }}" @class(['is-current' => request()->routeIs('staff.investors.index', 'staff.investors.show')])>Investor list</a>
+                                <a href="{{ route('staff.inquiries.index') }}" @class(['is-current' => request()->routeIs('staff.inquiries.*')])>Inquiry list</a>
+                            </div>
+                        </details>
+                    @endcan
+                    <details class="admin-nav-group" data-nav-group="notifications" @if(request()->routeIs('staff.notifications.*')) open @endif>
+                        <summary><i data-lucide="bell" aria-hidden="true"></i><span>Notifications</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+                        <div class="admin-nav-group__items">
+                            <a href="{{ route('staff.notifications.overview') }}" @class(['is-current' => request()->routeIs('staff.notifications.overview')])>Overview</a>
+                            <a href="{{ route('staff.notifications.index') }}" @class(['is-current' => request()->routeIs('staff.notifications.index')])>Notification list</a>
+                        </div>
+                    </details>
+                    @role('Super Administrator')
+                        <details class="admin-nav-group" data-nav-group="users" @if(request()->routeIs('staff.users.*')) open @endif>
+                            <summary><i data-lucide="users-round" aria-hidden="true"></i><span>Users &amp; access</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+                            <div class="admin-nav-group__items">
+                                <a href="{{ route('staff.users.overview') }}" @class(['is-current' => request()->routeIs('staff.users.overview')])>Overview</a>
+                                <a href="{{ route('staff.users.staff') }}" @class(['is-current' => request()->routeIs('staff.users.staff')])>Staff list</a>
+                                <a href="{{ route('staff.users.roles') }}" @class(['is-current' => request()->routeIs('staff.users.roles')])>Roles</a>
+                                <a href="{{ route('staff.users.permissions') }}" @class(['is-current' => request()->routeIs('staff.users.permissions')])>Permissions</a>
+                            </div>
+                        </details>
+                    @endrole
                 </nav>
                 <div class="admin-sidebar__footer"><span>{{ auth()->user()->name }}</span><small>{{ auth()->user()->roles->pluck('name')->join(', ') }}</small></div>
             </aside>

@@ -22,6 +22,16 @@ class OpportunityWorkflowController extends Controller
 {
     public function index(): View
     {
+        return $this->workspace(false, true);
+    }
+
+    public function overview(): View
+    {
+        return $this->workspace(true, false);
+    }
+
+    private function workspace(bool $showOverview, bool $showList): View
+    {
         $metrics = Opportunity::query()
             ->leftJoin('opportunity_financials', 'opportunity_financials.opportunity_id', '=', 'opportunities.id')
             ->selectRaw('COUNT(DISTINCT opportunities.id) as total')
@@ -31,9 +41,34 @@ class OpportunityWorkflowController extends Controller
             ->selectRaw('COUNT(DISTINCT opportunities.district_id) as districts')
             ->selectRaw('COUNT(DISTINCT CASE WHEN opportunities.workflow_status = ? AND opportunities.sla_due_at < ? THEN opportunities.id END) as overdue', [Opportunity::WORKFLOW_PENDING_APPROVAL, now()])
             ->first();
+        $statusCounts = Opportunity::query()->selectRaw('workflow_status, COUNT(*) as total')->groupBy('workflow_status')->pluck('total', 'workflow_status');
+        $sectorPerformance = Opportunity::query()
+            ->join('sectors', 'sectors.id', '=', 'opportunities.sector_id')
+            ->leftJoin('opportunity_financials', 'opportunity_financials.opportunity_id', '=', 'opportunities.id')
+            ->selectRaw('sectors.name, COUNT(DISTINCT opportunities.id) as opportunities_count')
+            ->selectRaw("COALESCE(SUM(CASE WHEN opportunity_financials.currency = 'GHS' THEN opportunity_financials.amount ELSE 0 END), 0) as pipeline_value")
+            ->selectRaw('AVG(opportunity_financials.roi_percentage) as average_roi')
+            ->groupBy('sectors.id', 'sectors.name')
+            ->orderByDesc('pipeline_value')
+            ->limit(8)
+            ->get();
+        $statuses = [Opportunity::WORKFLOW_DRAFT, Opportunity::WORKFLOW_PENDING_APPROVAL, Opportunity::WORKFLOW_APPROVED, Opportunity::WORKFLOW_ACTIVE, Opportunity::WORKFLOW_COMPLETED, Opportunity::WORKFLOW_CANCELLED];
 
         return view('admin.opportunities.index', [
+            'showOverview' => $showOverview,
+            'showList' => $showList,
             'metrics' => $metrics->toArray(),
+            'charts' => [
+                'status' => [
+                    'labels' => collect($statuses)->map(fn ($status) => str($status)->replace('_', ' ')->title()->toString())->all(),
+                    'values' => collect($statuses)->map(fn ($status) => (int) ($statusCounts[$status] ?? 0))->all(),
+                ],
+                'sectors' => [
+                    'labels' => $sectorPerformance->pluck('name')->all(),
+                    'values' => $sectorPerformance->map(fn ($sector) => round((float) $sector->pipeline_value / 1000000, 2))->all(),
+                    'roi' => $sectorPerformance->map(fn ($sector) => round((float) $sector->average_roi, 1))->all(),
+                ],
+            ],
             'opportunities' => Opportunity::query()
                 ->select('id', 'uuid', 'title', 'district_id', 'sector_id', 'reviewer_id', 'workflow_status', 'sla_due_at', 'updated_at')
                 ->with(['district:id,name', 'sector:id,name', 'reviewer:id,name'])

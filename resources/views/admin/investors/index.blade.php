@@ -1,0 +1,13 @@
+<x-admin-layout title="Investor onboarding">
+    <div class="admin-page-heading"><div><p class="admin-kicker">Investor services</p><h1>{{ $showOverview ? 'Investor overview' : 'Investor list' }}</h1><p>{{ $showOverview ? 'Monitor onboarding volume, approvals and service-level exposure.' : 'Prioritize individual KYC applications by workflow state and deadline.' }}</p></div></div>
+    @if($showOverview)
+    <section class="metric-grid" aria-label="Onboarding overview">
+        @foreach([['Applications',$metrics->total ?? 0,'All cases','green'],['Submitted',$metrics->submitted ?? 0,'Awaiting review','gold'],['In review',$metrics->reviewing ?? 0,'Assigned cases','blue'],['Approved',$metrics->approved ?? 0,'Verified investors','green'],['SLA breaches',$metrics->overdue ?? 0,'Needs attention','red']] as [$label,$value,$note,$tone])<article class="metric metric--{{ $tone }}"><span>{{ $label }}</span><strong>{{ number_format($value) }}</strong><small>{{ $note }}</small></article>@endforeach
+    </section>
+    @endif
+    @if($showList)
+    <form class="admin-filterbar" method="get"><label><span>Status</span><select name="status" onchange="this.form.submit()"><option value="">All statuses</option>@foreach(['draft','submitted','under_review','action_required','approved','rejected','withdrawn'] as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ str($status)->replace('_',' ')->title() }}</option>@endforeach</select></label><a href="{{ route('staff.investors.index') }}">Reset</a></form>
+    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Investor</th><th>Reference</th><th>Status</th><th>Reviewer</th><th>SLA</th><th>Action</th></tr></thead><tbody>@forelse($cases as $case)<tr><td><strong>{{ $case->profile->display_name }}</strong><small>{{ $case->profile->user->email }} · {{ str($case->profile->profile_type)->replace('_',' ')->title() }}</small></td><td>{{ $case->reference }}</td><td><span class="admin-status admin-status--{{ $case->status }}">{{ str($case->status)->replace('_',' ')->title() }}</span></td><td>{{ $case->assignee?->name ?? 'Unassigned' }}</td><td @class(['is-overdue' => $case->sla_due_at?->isPast()])>{{ $case->sla_due_at?->diffForHumans() ?? 'Not active' }}</td><td><a href="{{ route('staff.investors.show', $case) }}">Review</a></td></tr>@empty<tr><td class="table-empty" colspan="6">No onboarding cases match this view.</td></tr>@endforelse</tbody></table></div>
+    <div class="admin-pagination">{{ $cases->links() }}</div>
+    @endif
+</x-admin-layout>

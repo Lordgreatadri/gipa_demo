@@ -29,6 +29,11 @@ class RegisteredUserController extends Controller
             ]);
 
             $user->assignRole(Role::findOrCreate('Investor', 'web'));
+            $user->investorProfile()->create([
+                'display_name' => $user->name,
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
+            ]);
 
             return $user;
         });

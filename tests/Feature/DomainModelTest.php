@@ -6,6 +6,8 @@ use App\Models\District;
 use App\Models\EnterpriseType;
 use App\Models\InvestmentStructure;
 use App\Models\InvestorInquiry;
+use App\Models\InvestorOnboardingCase;
+use App\Models\InvestorProfile;
 use App\Models\Opportunity;
 use App\Models\Region;
 use App\Models\Sector;
@@ -163,5 +165,38 @@ class DomainModelTest extends TestCase
         $this->expectException(LogicException::class);
 
         $event->update(['reason' => 'Attempted revision']);
+    }
+
+    public function test_investor_profile_owns_an_immutable_onboarding_history(): void
+    {
+        $user = User::factory()->create();
+        $profile = $user->investorProfile()->create([
+            'display_name' => $user->name,
+            'created_by' => $user->id,
+        ]);
+        $case = $profile->onboardingCases()->create([
+            'reference' => 'ONB-2026-000001',
+            'created_by' => $user->id,
+        ]);
+        $event = $case->events()->create([
+            'actor_id' => $user->id,
+            'action' => 'created',
+            'to_status' => InvestorOnboardingCase::STATUS_DRAFT,
+            'metadata' => ['schema_version' => 1],
+        ]);
+
+        $this->assertTrue($profile->user->is($user));
+        $this->assertTrue($user->investorProfile->is($profile));
+        $this->assertTrue($case->profile->is($profile));
+        $this->assertTrue($event->onboardingCase->is($case));
+        $this->assertSame(InvestorProfile::ONBOARDING_NOT_STARTED, $profile->onboarding_state);
+        $this->assertSame(InvestorOnboardingCase::STATUS_DRAFT, $case->status);
+        $this->assertSame(['schema_version' => 1], $event->metadata);
+        $this->assertNotNull($profile->uuid);
+        $this->assertNotNull($case->uuid);
+        $this->assertSame('uuid', $profile->getRouteKeyName());
+
+        $this->expectException(LogicException::class);
+        $event->delete();
     }
 }

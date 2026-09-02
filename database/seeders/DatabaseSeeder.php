@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\DefaultRoleUserSeeder;
+use Database\Seeders\InvestorKycReferenceSeeder;
+use Database\Seeders\InvestorScenarioSeeder;
 use Database\Seeders\WorkflowPermissionSeeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
@@ -17,9 +17,12 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             WorkflowPermissionSeeder::class,
+            InvestorKycReferenceSeeder::class,
             DefaultSystemUserSeeder::class,
+            DefaultRoleUserSeeder::class,
             GhanaDistrictRegistrySeeder::class,
             IompPrototypeSeeder::class,
+            InvestorScenarioSeeder::class,
         ]);
     }
 }

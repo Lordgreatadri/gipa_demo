@@ -19,6 +19,16 @@ class DistrictWorkflowController extends Controller
 {
     public function index(): View
     {
+        return $this->workspace(false, true);
+    }
+
+    public function overview(): View
+    {
+        return $this->workspace(true, false);
+    }
+
+    private function workspace(bool $showOverview, bool $showList): View
+    {
         $metrics = District::query()->selectRaw('COUNT(*) as total')
             ->selectRaw('SUM(CASE WHEN workflow_status = ? THEN 1 ELSE 0 END) as published', [District::STATUS_PUBLISHED])
             ->selectRaw('SUM(CASE WHEN workflow_status = ? THEN 1 ELSE 0 END) as under_review', [District::STATUS_UNDER_REVIEW])
@@ -26,9 +36,37 @@ class DistrictWorkflowController extends Controller
             ->selectRaw('AVG(readiness_score) as readiness')
             ->selectRaw('AVG(infrastructure_quality_score) as infrastructure')
             ->first();
+        $statusCounts = District::query()->selectRaw('workflow_status, COUNT(*) as total')->groupBy('workflow_status')->pluck('total', 'workflow_status');
+        $readinessScores = District::query()->whereNotNull('readiness_score')->pluck('readiness_score');
+        $readinessBands = collect([
+            'Early stage (0-39)' => [0, 40],
+            'Developing (40-59)' => [40, 60],
+            'Investment ready (60-79)' => [60, 80],
+            'High readiness (80-100)' => [80, 101],
+        ])->map(fn (array $range) => $readinessScores->filter(fn ($score) => $score >= $range[0] && $score < $range[1])->count());
+        $regionPerformance = District::query()
+            ->join('regions', 'regions.id', '=', 'districts.region_id')
+            ->selectRaw('regions.name, AVG(districts.readiness_score) as readiness, COALESCE(SUM(districts.population), 0) as population')
+            ->groupBy('regions.id', 'regions.name')
+            ->orderByDesc('readiness')
+            ->get();
 
         return view('admin.districts.index', [
+            'showOverview' => $showOverview,
+            'showList' => $showList,
             'metrics' => $metrics->toArray(),
+            'charts' => [
+                'status' => [
+                    'labels' => ['Draft', 'Under review', 'Published'],
+                    'values' => [(int) ($statusCounts[District::STATUS_DRAFT] ?? 0), (int) ($statusCounts[District::STATUS_UNDER_REVIEW] ?? 0), (int) ($statusCounts[District::STATUS_PUBLISHED] ?? 0)],
+                ],
+                'readiness' => ['labels' => $readinessBands->keys()->all(), 'values' => $readinessBands->values()->all()],
+                'regions' => [
+                    'labels' => $regionPerformance->pluck('name')->all(),
+                    'readiness' => $regionPerformance->map(fn ($region) => round((float) $region->readiness, 1))->all(),
+                    'population' => $regionPerformance->map(fn ($region) => round((float) $region->population / 1000000, 2))->all(),
+                ],
+            ],
             'districts' => District::query()
                 ->select('id', 'uuid', 'name', 'code', 'region_id', 'reviewer_id', 'workflow_status', 'sla_due_at', 'updated_at')
                 ->with(['region:id,name', 'reviewer:id,name'])
