@@ -2,6 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Certificate;
+use App\Models\District;
+use App\Models\EnterpriseType;
+use App\Models\InvestorInquiry;
+use App\Models\OpportunityContact;
+use App\Models\OpportunityFinancial;
+use App\Models\OpportunityWorkflowEvent;
+use App\Models\Sector;
+use App\Models\SubSector;
+use App\Models\User;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -156,6 +166,11 @@ class Opportunity extends Model implements HasMedia
     public function contacts(): HasMany
     {
         return $this->hasMany(OpportunityContact::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
     }
 
     public function workflowEvents(): HasMany

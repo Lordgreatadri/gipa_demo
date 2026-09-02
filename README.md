@@ -7,6 +7,27 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## IOMP demo data
+
+Demo scenarios are opt-in. Configure the `DEFAULT_SYSTEM_USER_*`, `DEMO_*` and certificate signing variables from `.env.example`, then enable `IOMP_SEED_DEMO_DATA=true`.
+
+Provision the local signing key once before the first certificate seed:
+
+```powershell
+php artisan certificates:key-generate
+php artisan migrate --seed
+```
+
+The idempotent demo chain creates governed reference data, role-based staff accounts, 150 investor onboarding profiles, opportunities, and one certificate registry record per demo investor. Certificate scenarios include drafts, signed active records, Q1-Q4 expiry dates, near-term expiries, suspensions, revocations, district assignments, field-verification outcomes, and in-app auditor alerts. Demo alerts are stored in-app without sending bulk external email; real officer submissions retain normal mail and database delivery.
+
+Certificate issuance queues private QR and PDF artifact generation. Process those jobs after seeding:
+
+```powershell
+php artisan queue:work --stop-when-empty --tries=3
+```
+
+Do not use demo credentials or locally generated signing keys in production.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

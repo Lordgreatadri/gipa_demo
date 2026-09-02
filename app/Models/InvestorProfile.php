@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Certificate;
 use App\Models\InvestorDocument;
 use App\Models\InvestorOnboardingCase;
 use Dyrynda\Database\Support\GeneratesUuid;
@@ -79,5 +80,10 @@ class InvestorProfile extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(InvestorDocument::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
     }
 }

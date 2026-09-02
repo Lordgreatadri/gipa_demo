@@ -22,7 +22,7 @@ Status reflects verified repository behavior. A checked item is implemented and 
 - [x] Spatie role and workflow permission matrix
 - [x] Least-privilege Field Agent role for district and opportunity submission
 - [x] Environment-configured default Super Administrator seeder
-- [ ] District-level officer assignment restrictions
+- [x] Normalized, audited multi-district officer assignments with active-period restrictions
 - [ ] MFA user experience and enforcement
 - [ ] User, role and permission management screens
 - [ ] JWT login and refresh for protected API routes
@@ -91,7 +91,20 @@ These programme components are named in the broader concept material but are not
 - [ ] Normalized investor organizations, memberships and addresses
 - [ ] Investor aftercare cases, interactions, tasks and inquiry conversion
 - [ ] Act 1173 renewal rules after authoritative legal/process confirmation
-- [ ] Certificates and anti-forgery QR verification
+- [x] Certificate registry with UUID routing, reference types and immutable issued snapshots
+- [x] RSA/SHA-256 signing, canonical payload hashes, key IDs and retained-key verification
+- [x] Opaque QR verification URLs with encrypted token recovery and hashed public lookup
+- [x] Minimal public web/API verification with rate limiting and no private officer/evidence fields
+- [x] District-scoped staff registry, field inspection handoff and append-only officer decisions
+- [x] Idempotent verification records with optional GPS, notes and private evidence quarantine
+- [x] Audited issue, suspend, reinstate and revoke lifecycle transitions under row locks
+- [x] Queued private QR/PDF generation with authorized downloads and retry-safe cleanup
+- [x] Cursor-paginated, indexed certificate/assignment queues and bounded aggregate queries
+- [x] Online-only validity checks excluded from service-worker caching
+- [ ] Production signing-key custody/HSM or approved key-management service
+- [ ] Automated evidence malware scanner and approved retention/export policy
+- [ ] JWT-protected field API and OpenAPI contract after authentication approval
+- [ ] Explicitly freshness-labelled offline synchronization after device/staleness approval
 - [ ] Investor-to-business matchmaking
 - [ ] ORC, GIS and payment integrations
 - [ ] AI assistant with governed responses
@@ -104,6 +117,7 @@ These programme components are named in the broader concept material but are not
 - [x] Public discovery tests verify visibility, filters, pagination and bounded queries
 - [x] Administrative workflow tests verify permissions, transitions, SLA, audit and notifications
 - [x] Investor onboarding tests verify registration, backfill, KYC gates, private storage, ownership, permissions, audit and decisions
+- [x] Certificate tests verify district scope, immutable signing, tamper detection, key rotation, public privacy, idempotency, artifacts and query bounds
 - [x] Frontend production assets compile through Vite
 
 ## Data Dependencies

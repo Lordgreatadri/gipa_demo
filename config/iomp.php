@@ -28,4 +28,21 @@ return [
         'opportunity_review_hours' => (int) env('OPPORTUNITY_REVIEW_SLA_HOURS', 72),
         'investor_onboarding_review_hours' => (int) env('INVESTOR_ONBOARDING_REVIEW_SLA_HOURS', 72),
     ],
+
+    'certificates' => [
+        'active_key_id' => env('CERTIFICATE_ACTIVE_KEY_ID', 'iomp-mvp-1'),
+        'algorithm' => env('CERTIFICATE_SIGNATURE_ALGORITHM', 'RSA-SHA256'),
+        'keys' => [
+            'iomp-mvp-1' => [
+                'private_key_path' => env(
+                    'CERTIFICATE_PRIVATE_KEY_PATH',
+                    storage_path('app/certificates/keys/iomp-mvp-1-private.pem')
+                ),
+                'public_key_path' => env(
+                    'CERTIFICATE_PUBLIC_KEY_PATH',
+                    storage_path('app/certificates/keys/iomp-mvp-1-public.pem')
+                ),
+            ],
+        ],
+    ],
 ];

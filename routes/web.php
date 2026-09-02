@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\CertificateController as AdminCertificateController;
 use App\Http\Controllers\Admin\DistrictWorkflowController;
 use App\Http\Controllers\Admin\InvestorOnboardingController as AdminInvestorOnboardingController;
 use App\Http\Controllers\Admin\OpportunityReferenceDataController;
 use App\Http\Controllers\Admin\OpportunityWorkflowController;
+use App\Http\Controllers\Admin\StaffDistrictAssignmentController;
 use App\Http\Controllers\Admin\WorkspaceDirectoryController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationController;
@@ -13,6 +15,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\InvestorPortalController;
 use App\Http\Controllers\PublicPortal\OpportunityController;
+use App\Http\Controllers\PublicPortal\CertificateVerificationController;
 use App\Services\PublicOpportunityFilters;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +28,9 @@ Route::get('/opportunities/{opportunity}', [OpportunityController::class, 'show'
 Route::post('/opportunities/{opportunity}/inquiries', [OpportunityController::class, 'storeInquiry'])
     ->middleware('throttle:5,1')
     ->name('opportunities.inquiries.store');
+Route::get('/c/{token}', [CertificateVerificationController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('certificates.verify');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'createInvestor'])->name('login');
@@ -71,6 +77,18 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'staff'])->group(fun
     Route::get('/users/permissions', [WorkspaceDirectoryController::class, 'usersPermissions'])->name('users.permissions');
     Route::get('/reference-data', [OpportunityReferenceDataController::class, 'index'])->name('reference-data.index');
     Route::get('/reference-data/{section}', [OpportunityReferenceDataController::class, 'index'])->name('reference-data.section');
+    Route::get('/certificate-assignments', [StaffDistrictAssignmentController::class, 'index'])->name('certificate-assignments.index');
+    Route::post('/certificate-assignments', [StaffDistrictAssignmentController::class, 'store'])->name('certificate-assignments.store');
+    Route::patch('/certificate-assignments/{assignment}/end', [StaffDistrictAssignmentController::class, 'end'])->name('certificate-assignments.end');
+    Route::get('/certificates/overview', [AdminCertificateController::class, 'overview'])->name('certificates.overview');
+    Route::get('/certificates', [AdminCertificateController::class, 'index'])->name('certificates.index');
+    Route::get('/certificates/create', [AdminCertificateController::class, 'create'])->name('certificates.create');
+    Route::post('/certificates', [AdminCertificateController::class, 'store'])->name('certificates.store');
+    Route::get('/certificates/evidence/{verification}', [AdminCertificateController::class, 'evidence'])->middleware('throttle:30,1')->name('certificates.evidence');
+    Route::get('/certificates/{certificate}/artifacts/{artifact}', [AdminCertificateController::class, 'artifact'])->middleware('throttle:30,1')->name('certificates.artifact');
+    Route::get('/certificates/{certificate}', [AdminCertificateController::class, 'show'])->name('certificates.show');
+    Route::post('/certificates/{certificate}/verify', [AdminCertificateController::class, 'verify'])->middleware('throttle:20,1')->name('certificates.verify');
+    Route::post('/certificates/{certificate}/{action}', [AdminCertificateController::class, 'action'])->name('certificates.action');
     Route::get('/investors', [AdminInvestorOnboardingController::class, 'index'])->name('investors.index');
     Route::get('/investors-overview', [AdminInvestorOnboardingController::class, 'overview'])->name('investors.overview');
     Route::get('/investors/{case}', [AdminInvestorOnboardingController::class, 'show'])->name('investors.show');
