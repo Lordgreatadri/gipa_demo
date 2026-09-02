@@ -1,9 +1,18 @@
 <x-admin-layout title="Opportunity reference data">
     <div class="admin-page-heading">
-        <div><p class="admin-kicker">Opportunity configuration</p><h1>Reference data</h1><p>Manage the classifications available when staff create and maintain investment opportunities.</p></div>
+        <div><p class="admin-kicker">Opportunity configuration</p><h1>{{ $section ? str($section)->replace('-', ' ')->title() : 'Reference data overview' }}</h1><p>Manage the classifications available when staff create and maintain investment opportunities.</p></div>
         <a class="button button--gold" href="{{ route('staff.opportunities.create') }}">Create opportunity</a>
     </div>
 
+    @if($section === null)
+        <section class="metric-widget-grid" aria-label="Reference data overview">
+            <x-metric-widget label="Sectors" :value="number_format($sectors->count())" note="Primary classifications" icon="factory" tone="green" />
+            <x-metric-widget label="Sub-sectors" :value="number_format($subSectors->count())" note="Detailed classifications" icon="git-branch" tone="blue" />
+            <x-metric-widget label="Enterprise types" :value="number_format($enterpriseTypes->count())" note="Operating structures" icon="building-2" tone="gold" />
+        </section>
+    @endif
+
+    @if($section === 'sectors')
     <section class="reference-section" id="sectors">
         <div class="reference-section__heading"><div><h2>Sectors</h2><p>Primary economic classifications used for filtering and reporting.</p></div><strong>{{ number_format($sectors->count()) }}</strong></div>
         <form class="reference-create" method="post" action="{{ route('staff.reference-data.store', 'sector') }}">
@@ -33,7 +42,9 @@
             @endforeach
         </div>
     </section>
+    @endif
 
+    @if($section === 'sub-sectors')
     <section class="reference-section" id="sub-sectors">
         <div class="reference-section__heading"><div><h2>Sub-sectors</h2><p>Detailed classifications linked to a parent sector.</p></div><strong>{{ number_format($subSectors->count()) }}</strong></div>
         <form class="reference-create" method="post" action="{{ route('staff.reference-data.store', 'sub-sector') }}">
@@ -64,7 +75,9 @@
             @endforeach
         </div>
     </section>
+    @endif
 
+    @if($section === 'enterprise-types')
     <section class="reference-section" id="enterprise-types">
         <div class="reference-section__heading"><div><h2>Enterprise types</h2><p>Legal and operating structures used to describe opportunity sponsors.</p></div><strong>{{ number_format($enterpriseTypes->count()) }}</strong></div>
         <form class="reference-create" method="post" action="{{ route('staff.reference-data.store', 'enterprise-type') }}">
@@ -92,4 +105,5 @@
             @endforeach
         </div>
     </section>
+    @endif
 </x-admin-layout>

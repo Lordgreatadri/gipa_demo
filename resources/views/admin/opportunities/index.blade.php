@@ -1,18 +1,21 @@
 <x-admin-layout title="Opportunity management">
-    <div class="admin-page-heading"><div><p class="admin-kicker">Content and governance</p><h1>Opportunities</h1><p>Review lifecycle state, assignment and SLA position across the investment pipeline.</p></div>@can('opportunities.submit')<a class="button button--gold" href="{{ route('staff.opportunities.create') }}">Add opportunity</a>@endcan</div>
-    <section class="metric-grid" aria-label="Opportunity overview">
-        @foreach([
-            ['label'=>'Opportunities','value'=>number_format($metrics['total']),'note'=>'Pipeline total','tone'=>'green'],
-            ['label'=>'Pipeline value','value'=>'GHS '.number_format($metrics['pipeline_value']/1000000, 1).'M','note'=>'GHS-denominated records','tone'=>'gold'],
-            ['label'=>'Pending approval','value'=>number_format($metrics['pending']),'note'=>'Awaiting decision','tone'=>'gold'],
-            ['label'=>'Active','value'=>number_format($metrics['active']),'note'=>'Published investments','tone'=>'blue'],
-            ['label'=>'District reach','value'=>number_format($metrics['districts']),'note'=>'Districts represented','tone'=>'green'],
-            ['label'=>'SLA breaches','value'=>number_format($metrics['overdue']),'note'=>'Overdue reviews','tone'=>'red'],
-        ] as $metric)
-            <article class="metric metric--{{ $metric['tone'] }}"><span>{{ $metric['label'] }}</span><strong>{{ $metric['value'] }}</strong><small>{{ $metric['note'] }}</small></article>
-        @endforeach
+    <div class="admin-page-heading"><div><p class="admin-kicker">Content and governance</p><h1>{{ $showOverview ? 'Opportunity overview' : 'Opportunity list' }}</h1><p>{{ $showOverview ? 'Review portfolio scale, lifecycle performance and sector returns.' : 'Manage individual opportunity records, assignments and approval deadlines.' }}</p></div>@can('opportunities.submit')<a class="button button--gold" href="{{ route('staff.opportunities.create') }}">Add opportunity</a>@endcan</div>
+    @if($showOverview)
+    <section class="metric-widget-grid" aria-label="Opportunity overview">
+        <x-metric-widget label="Portfolio volume" :value="number_format($metrics['total'])" :note="number_format($metrics['districts']).' districts represented'" icon="layers-3" tone="green" />
+        <x-metric-widget label="GHS pipeline value" :value="'GHS '.number_format($metrics['pipeline_value']/1000000, 1).'M'" note="Domestic-currency records" icon="circle-dollar-sign" tone="gold" />
+        <x-metric-widget label="Active investments" :value="number_format($metrics['active'])" :note="number_format($metrics['pending']).' awaiting approval'" icon="activity" tone="blue" />
+        <x-metric-widget label="Review breaches" :value="number_format($metrics['overdue'])" note="Past the approval SLA" icon="clock-alert" tone="red" />
     </section>
+    <section class="dashboard-chart-grid" aria-label="Opportunity analytics">
+        <x-chart-panel title="Lifecycle distribution" description="Where opportunities sit in the approval and delivery cycle." type="doughnut" :labels="$charts['status']['labels']" :datasets="[['label'=>'Opportunities','data'=>$charts['status']['values']]]" :summary="'Opportunity lifecycle figures: '.collect($charts['status']['labels'])->zip($charts['status']['values'])->map(fn($item) => $item[0].' '.$item[1])->join(', ')" />
+        <x-chart-panel title="Pipeline value by sector" description="GHS-denominated value in millions across the leading sectors." type="bar" :labels="$charts['sectors']['labels']" :datasets="[['label'=>'GHS millions','data'=>$charts['sectors']['values']]]" :summary="'Sector pipeline values in GHS millions: '.collect($charts['sectors']['labels'])->zip($charts['sectors']['values'])->map(fn($item) => $item[0].' '.$item[1])->join(', ')" />
+        <x-chart-panel title="Expected return by sector" description="Average stated ROI for comparative portfolio planning." type="line" :labels="$charts['sectors']['labels']" :datasets="[['label'=>'Average ROI %','data'=>$charts['sectors']['roi']]]" :summary="'Average sector ROI percentages: '.collect($charts['sectors']['labels'])->zip($charts['sectors']['roi'])->map(fn($item) => $item[0].' '.$item[1])->join(', ')" wide />
+    </section>
+    @endif
+    @if($showList)
     <form class="admin-filterbar" method="get"><label><span>Status</span><select name="status" onchange="this.form.submit()"><option value="">All statuses</option>@foreach(['draft'=>'Draft','pending_approval'=>'Pending approval','approved'=>'Approved','active'=>'Active','completed'=>'Completed','cancelled'=>'Cancelled'] as $value=>$label)<option value="{{ $value }}" @selected(request('status')===$value)>{{ $label }}</option>@endforeach</select></label><a href="{{ route('staff.opportunities.index') }}">Reset</a></form>
     <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Opportunity</th><th>District / sector</th><th>Status</th><th>Reviewer</th><th>SLA</th><th>Actions</th></tr></thead><tbody>@forelse($opportunities as $item)<tr><td><strong>{{ $item->title }}</strong><small>Updated {{ $item->updated_at->diffForHumans() }}</small></td><td>{{ $item->district->name }}<small>{{ $item->sector->name }}</small></td><td><span class="admin-status admin-status--{{ $item->workflow_status }}">{{ str($item->workflow_status)->replace('_',' ')->title() }}</span></td><td>{{ $item->reviewer?->name ?? 'Unassigned' }}</td><td @class(['is-overdue'=>$item->sla_due_at?->isPast()])>{{ $item->sla_due_at?->diffForHumans() ?? '—' }}</td><td><div class="table-actions"><a href="{{ route('staff.opportunities.show', $item) }}">Open</a>@if($item->workflow_status === 'draft' && auth()->user()->can('opportunities.submit'))<a href="{{ route('staff.opportunities.edit', $item) }}">Edit</a><form method="post" action="{{ route('staff.opportunities.destroy', $item) }}" onsubmit="return confirm('Delete this opportunity draft?')">@csrf @method('DELETE')<button type="submit">Delete</button></form>@endif</div></td></tr>@empty<tr><td colspan="6" class="table-empty">No opportunities match this view.</td></tr>@endforelse</tbody></table></div>
     <div class="admin-pagination">{{ $opportunities->links() }}</div>
+    @endif
 </x-admin-layout>

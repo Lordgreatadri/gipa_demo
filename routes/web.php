@@ -1,14 +1,17 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DistrictWorkflowController;
+use App\Http\Controllers\Admin\InvestorOnboardingController as AdminInvestorOnboardingController;
+use App\Http\Controllers\Admin\OpportunityReferenceDataController;
+use App\Http\Controllers\Admin\OpportunityWorkflowController;
+use App\Http\Controllers\Admin\WorkspaceDirectoryController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\DistrictWorkflowController;
-use App\Http\Controllers\Admin\OpportunityWorkflowController;
-use App\Http\Controllers\Admin\OpportunityReferenceDataController;
+use App\Http\Controllers\InvestorPortalController;
 use App\Http\Controllers\PublicPortal\OpportunityController;
 use App\Services\PublicOpportunityFilters;
 use Illuminate\Support\Facades\Route;
@@ -44,16 +47,40 @@ Route::middleware('auth')->group(function () {
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware('signed')->name('verification.verify');
     Route::post('/email/verification-notification', [EmailVerificationController::class, 'send'])->middleware('throttle:6,1')->name('verification.send');
 
-    Route::view('/portal', 'portal.investor')->middleware('verified')->name('investor.dashboard');
+    Route::middleware('verified')->group(function () {
+        Route::get('/portal', [InvestorPortalController::class, 'show'])->name('investor.dashboard');
+        Route::patch('/portal/profile', [InvestorPortalController::class, 'updateProfile'])->name('investor.profile.update');
+        Route::post('/portal/onboarding', [InvestorPortalController::class, 'start'])->name('investor.onboarding.start');
+        Route::post('/portal/onboarding/{case}/documents', [InvestorPortalController::class, 'upload'])->middleware('throttle:10,1')->name('investor.onboarding.documents.store');
+        Route::post('/portal/onboarding/{case}/submit', [InvestorPortalController::class, 'submit'])->middleware('throttle:5,1')->name('investor.onboarding.submit');
+        Route::get('/portal/documents/{document}', [InvestorPortalController::class, 'download'])->middleware('throttle:30,1')->name('investor.documents.download');
+    });
 });
 
 Route::prefix('staff')->name('staff.')->middleware(['auth', 'staff'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
+    Route::get('/opportunity-workspace', [WorkspaceDirectoryController::class, 'opportunities'])->name('opportunity-workspace');
+    Route::get('/regions', [WorkspaceDirectoryController::class, 'regions'])->name('regions.index');
+    Route::get('/investment-workspace', [WorkspaceDirectoryController::class, 'investments'])->name('investments.overview');
+    Route::get('/inquiries', [WorkspaceDirectoryController::class, 'inquiries'])->name('inquiries.index');
+    Route::get('/notifications', [WorkspaceDirectoryController::class, 'notificationsOverview'])->name('notifications.overview');
+    Route::get('/notifications/list', [WorkspaceDirectoryController::class, 'notificationsIndex'])->name('notifications.index');
+    Route::get('/users', [WorkspaceDirectoryController::class, 'usersOverview'])->name('users.overview');
+    Route::get('/users/staff', [WorkspaceDirectoryController::class, 'usersStaff'])->name('users.staff');
+    Route::get('/users/roles', [WorkspaceDirectoryController::class, 'usersRoles'])->name('users.roles');
+    Route::get('/users/permissions', [WorkspaceDirectoryController::class, 'usersPermissions'])->name('users.permissions');
     Route::get('/reference-data', [OpportunityReferenceDataController::class, 'index'])->name('reference-data.index');
+    Route::get('/reference-data/{section}', [OpportunityReferenceDataController::class, 'index'])->name('reference-data.section');
+    Route::get('/investors', [AdminInvestorOnboardingController::class, 'index'])->name('investors.index');
+    Route::get('/investors-overview', [AdminInvestorOnboardingController::class, 'overview'])->name('investors.overview');
+    Route::get('/investors/{case}', [AdminInvestorOnboardingController::class, 'show'])->name('investors.show');
+    Route::post('/investors/{case}/{action}', [AdminInvestorOnboardingController::class, 'transition'])->name('investors.transition');
+    Route::post('/investor-documents/{document}/{action}', [AdminInvestorOnboardingController::class, 'documentDecision'])->name('investor-documents.decision');
     Route::post('/reference-data/{type}', [OpportunityReferenceDataController::class, 'store'])->name('reference-data.store');
     Route::put('/reference-data/{type}/{record}', [OpportunityReferenceDataController::class, 'update'])->name('reference-data.update');
     Route::delete('/reference-data/{type}/{record}', [OpportunityReferenceDataController::class, 'destroy'])->name('reference-data.destroy');
     Route::get('/opportunities', [OpportunityWorkflowController::class, 'index'])->name('opportunities.index');
+    Route::get('/opportunities-overview', [OpportunityWorkflowController::class, 'overview'])->name('opportunities.overview');
     Route::get('/opportunities/create', [OpportunityWorkflowController::class, 'create'])->name('opportunities.create');
     Route::post('/opportunities', [OpportunityWorkflowController::class, 'store'])->name('opportunities.store');
     Route::get('/opportunities/{opportunity}/edit', [OpportunityWorkflowController::class, 'edit'])->name('opportunities.edit');
@@ -62,6 +89,7 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'staff'])->group(fun
     Route::get('/opportunities/{opportunity}', [OpportunityWorkflowController::class, 'show'])->name('opportunities.show');
     Route::post('/opportunities/{opportunity}/{action}', [OpportunityWorkflowController::class, 'transition'])->name('opportunities.transition');
     Route::get('/districts', [DistrictWorkflowController::class, 'index'])->name('districts.index');
+    Route::get('/districts-overview', [DistrictWorkflowController::class, 'overview'])->name('districts.overview');
     Route::get('/districts/create', [DistrictWorkflowController::class, 'create'])->name('districts.create');
     Route::post('/districts', [DistrictWorkflowController::class, 'store'])->name('districts.store');
     Route::get('/districts/{district}/edit', [DistrictWorkflowController::class, 'edit'])->name('districts.edit');

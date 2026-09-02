@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Support\InvestorPermissions;
 use App\Support\WorkflowPermissions;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
@@ -14,15 +15,16 @@ class WorkflowPermissionSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach (WorkflowPermissions::ALL as $permission) {
+        foreach ([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL] as $permission) {
             Permission::findOrCreate($permission, 'web');
         }
 
-        Role::findOrCreate('Super Administrator', 'web')->syncPermissions(WorkflowPermissions::ALL);
+        Role::findOrCreate('Super Administrator', 'web')->syncPermissions([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL]);
         Role::findOrCreate('Content / Data Manager', 'web')->syncPermissions([
             WorkflowPermissions::DISTRICT_SUBMIT,
             WorkflowPermissions::OPPORTUNITY_SUBMIT,
             WorkflowPermissions::OPPORTUNITY_LIFECYCLE,
+            InvestorPermissions::VIEW,
         ]);
         Role::findOrCreate('District Officer', 'web')->syncPermissions([
             WorkflowPermissions::DISTRICT_SUBMIT,
@@ -37,6 +39,10 @@ class WorkflowPermissionSeeder extends Seeder
             WorkflowPermissions::DISTRICT_REASSIGN,
             WorkflowPermissions::OPPORTUNITY_REVIEW,
             WorkflowPermissions::OPPORTUNITY_REASSIGN,
+            InvestorPermissions::VIEW,
+            InvestorPermissions::REVIEW,
+            InvestorPermissions::REASSIGN,
+            InvestorPermissions::COMPLIANCE_MANAGE,
         ]);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

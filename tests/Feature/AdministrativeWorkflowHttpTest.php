@@ -9,6 +9,7 @@ use App\Models\Region;
 use App\Models\Sector;
 use App\Models\SubSector;
 use App\Models\User;
+use App\Support\InvestorPermissions;
 use App\Support\WorkflowPermissions;
 use Database\Seeders\GhanaDistrictRegistrySeeder;
 use Database\Seeders\WorkflowPermissionSeeder;
@@ -60,6 +61,20 @@ class AdministrativeWorkflowHttpTest extends TestCase
         $this->actingAs($investor)->get(route('staff.dashboard'))->assertForbidden();
     }
 
+    public function test_investments_overview_requires_investor_view_permission(): void
+    {
+        $staff = User::factory()->create(['account_type' => User::ACCOUNT_STAFF]);
+
+        $this->actingAs($staff)->get(route('staff.investments.overview'))->assertForbidden();
+
+        $staff->givePermissionTo(InvestorPermissions::VIEW);
+
+        $this->actingAs($staff)
+            ->get(route('staff.investments.overview'))
+            ->assertOk()
+            ->assertSee('Investments overview');
+    }
+
     public function test_staff_indexes_show_overview_metrics_and_draft_actions(): void
     {
         [$creator, , $opportunity] = $this->context();
@@ -75,22 +90,94 @@ class AdministrativeWorkflowHttpTest extends TestCase
         $opportunity->financial()->create(['amount' => 1500000, 'currency' => 'GHS']);
 
         $this->actingAs($creator)
-            ->get(route('staff.districts.index'))
+            ->get(route('staff.dashboard'))
+            ->assertOk()
+            ->assertSee('Investable portfolio')
+            ->assertSee('Opportunity portfolio')
+            ->assertSee('Investor onboarding')
+            ->assertSee('Application intake')
+            ->assertSee('data-nav-group="opportunities"', false)
+            ->assertSee('Notifications')
+            ->assertSee('data-dashboard-chart', false);
+
+        $this->actingAs($creator)
+            ->get(route('staff.districts.overview'))
             ->assertOk()
             ->assertSee('District overview')
+            ->assertSee('Investment readiness bands')
+            ->assertSee('Regional readiness and reach')
             ->assertSee('250,000')
-            ->assertSee('72.5%')
+            ->assertSee('72.5%');
+
+        $this->actingAs($creator)
+            ->get(route('staff.districts.index'))
+            ->assertOk()
+            ->assertSee('District list')
             ->assertSee('Add district')
             ->assertSee(route('staff.districts.edit', $opportunity->district));
 
         $this->actingAs($creator)
-            ->get(route('staff.opportunities.index'))
+            ->get(route('staff.opportunities.overview'))
             ->assertOk()
             ->assertSee('Opportunity overview')
-            ->assertSee('GHS 1.5M')
+            ->assertSee('Pipeline value by sector')
+            ->assertSee('Expected return by sector')
+            ->assertSee('GHS 1.5M');
+
+        $this->actingAs($creator)
+            ->get(route('staff.opportunities.index'))
+            ->assertOk()
+            ->assertSee('Opportunity list')
             ->assertSee('Add opportunity')
             ->assertSee(route('staff.opportunities.create'))
             ->assertSee(route('staff.opportunities.edit', $opportunity));
+    }
+
+    public function test_sidebar_destinations_are_distinct_working_pages(): void
+    {
+        [$staff] = $this->context();
+        $staff->givePermissionTo([
+            WorkflowPermissions::DISTRICT_SUBMIT,
+            WorkflowPermissions::OPPORTUNITY_SUBMIT,
+            'investors.view',
+        ]);
+
+        $pages = [
+            'staff.opportunity-workspace' => 'Portfolio and geographic coverage',
+            'staff.regions.index' => 'Region list',
+            'staff.districts.overview' => 'District overview',
+            'staff.districts.index' => 'District list',
+            'staff.opportunities.overview' => 'Opportunity overview',
+            'staff.opportunities.index' => 'Opportunity list',
+            'staff.reference-data.index' => 'Reference data overview',
+            'staff.investments.overview' => 'Investments overview',
+            'staff.investors.overview' => 'Investor overview',
+            'staff.investors.index' => 'Investor list',
+            'staff.inquiries.index' => 'Inquiry list',
+            'staff.notifications.overview' => 'Notifications overview',
+            'staff.notifications.index' => 'Notification list',
+        ];
+
+        foreach ($pages as $route => $heading) {
+            $this->actingAs($staff)->get(route($route))->assertOk()->assertSee($heading);
+        }
+
+        $this->actingAs($staff)->get(route('staff.opportunity-workspace'))
+            ->assertOk()
+            ->assertSee('Portfolio and geographic coverage')
+            ->assertSee('Active portfolio share')
+            ->assertSee('"type":"bar"', false)
+            ->assertSee('"type":"pie"', false)
+            ->assertSee('Active opportunities');
+
+        foreach (['sectors' => 'Sectors', 'sub-sectors' => 'Sub Sectors', 'enterprise-types' => 'Enterprise Types'] as $section => $heading) {
+            $this->actingAs($staff)->get(route('staff.reference-data.section', $section))->assertOk()->assertSee($heading);
+        }
+
+        $staff->assignRole('Super Administrator');
+        foreach (['staff.users.overview' => 'Users overview', 'staff.users.staff' => 'Staff list', 'staff.users.roles' => 'Roles', 'staff.users.permissions' => 'Permissions'] as $route => $heading) {
+            $this->actingAs($staff)->get(route($route))->assertOk()->assertSee($heading);
+        }
     }
 
     public function test_submitter_can_create_update_and_delete_drafts(): void
@@ -224,10 +311,14 @@ class AdministrativeWorkflowHttpTest extends TestCase
         ])->assertRedirect();
         $this->assertDatabaseHas('enterprise_types', ['id' => $type->id, 'name' => 'Public infrastructure trust', 'is_active' => false]);
 
-        $this->actingAs($creator)->get(route('staff.reference-data.index'))
+        $this->actingAs($creator)->get(route('staff.reference-data.section', 'sectors'))
             ->assertOk()
-            ->assertSee('Water infrastructure')
-            ->assertSee('Water treatment')
+            ->assertSee('Water infrastructure');
+        $this->actingAs($creator)->get(route('staff.reference-data.section', 'sub-sectors'))
+            ->assertOk()
+            ->assertSee('Water treatment');
+        $this->actingAs($creator)->get(route('staff.reference-data.section', 'enterprise-types'))
+            ->assertOk()
             ->assertSee('Public infrastructure trust');
 
         $this->actingAs($creator)->delete(route('staff.reference-data.destroy', ['enterprise-type', $type->uuid]))

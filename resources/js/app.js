@@ -1,9 +1,66 @@
-import { createIcons, Eye, EyeOff } from 'lucide';
+import Chart from 'chart.js/auto';
+import {
+	Activity, BadgeCheck, Bell, BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, CircleDollarSign,
+	ClockAlert, createIcons, Eye, EyeOff, Gauge, Landmark, Layers3, MapPinned,
+	Route, TriangleAlert, UsersRound,
+} from 'lucide';
 
 import './bootstrap';
 
 createIcons({
-	icons: { Eye, EyeOff },
+	icons: {
+		Activity, BadgeCheck, Bell, BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, CircleDollarSign,
+		ClockAlert, Eye, EyeOff, Gauge, Landmark, Layers3, MapPinned, Route,
+		TriangleAlert, UsersRound,
+	},
+});
+
+const chartPalette = ['#087a50', '#e0aa16', '#2474a6', '#d4543f', '#5d6b66', '#7b5aa6', '#2b9b8b', '#b86a26'];
+
+document.querySelectorAll('[data-chart-panel]').forEach((panel) => {
+	const canvas = panel.querySelector('[data-dashboard-chart]');
+	const configElement = panel.querySelector('[data-chart-config]');
+	if (!canvas || !configElement) return;
+
+	const config = JSON.parse(configElement.textContent);
+	const isCircular = ['doughnut', 'pie'].includes(config.type);
+	const isLine = config.type === 'line';
+	const datasets = config.datasets.map((dataset, index) => ({
+		...dataset,
+		backgroundColor: isCircular ? chartPalette : `${chartPalette[index]}cc`,
+		borderColor: isCircular ? '#ffffff' : chartPalette[index],
+		borderWidth: isCircular ? 3 : 2,
+		borderRadius: config.type === 'bar' ? 5 : 0,
+		pointBackgroundColor: chartPalette[index],
+		pointRadius: isLine ? 4 : 0,
+		pointHoverRadius: isLine ? 6 : 0,
+		fill: isLine,
+		tension: isLine ? 0.32 : 0,
+	}));
+
+	new Chart(canvas, {
+		type: config.type,
+		data: { labels: config.labels, datasets },
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+			animation: { duration: 650, easing: 'easeOutQuart' },
+			interaction: { intersect: false, mode: 'index' },
+			plugins: {
+				legend: {
+					position: isCircular ? 'right' : 'bottom',
+					labels: { boxWidth: 10, boxHeight: 10, padding: 16, usePointStyle: true, color: '#65736d', font: { family: 'DM Sans', size: 11 } },
+				},
+				tooltip: { padding: 10, cornerRadius: 4, titleFont: { family: 'Manrope' }, bodyFont: { family: 'DM Sans' } },
+			},
+			cutout: config.type === 'doughnut' ? '64%' : undefined,
+			scales: isCircular ? undefined : {
+				x: { grid: { display: false }, ticks: { color: '#65736d', maxRotation: 35, minRotation: 0, font: { family: 'DM Sans', size: 10 } } },
+				y: { beginAtZero: true, grid: { color: 'rgba(101,115,109,.14)' }, ticks: { color: '#65736d', precision: 0, font: { family: 'DM Sans', size: 10 } } },
+				y1: datasets.some((dataset) => dataset.yAxisID === 'y1') ? { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#65736d', font: { family: 'DM Sans', size: 10 } } } : undefined,
+			},
+		},
+	});
 });
 
 const root = document.documentElement;
@@ -127,6 +184,12 @@ updateSubSectorOptions();
 
 const adminMenu = document.querySelector('[data-admin-menu]');
 const adminSidebar = document.querySelector('[data-admin-sidebar]');
+
+document.querySelectorAll('[data-nav-group]').forEach((group) => {
+	const storageKey = `iomp-nav-${group.dataset.navGroup}`;
+	if (!group.querySelector('.is-current')) group.open = sessionStorage.getItem(storageKey) === 'open';
+	group.addEventListener('toggle', () => sessionStorage.setItem(storageKey, group.open ? 'open' : 'closed'));
+});
 
 adminMenu?.addEventListener('click', () => {
 	const isOpen = adminMenu.getAttribute('aria-expanded') === 'true';

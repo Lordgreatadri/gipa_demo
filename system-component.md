@@ -81,7 +81,16 @@ Status reflects verified repository behavior. A checked item is implemented and 
 
 These programme components are named in the broader concept material but are not defined as completed IOMP prototype modules in the current implementation.
 
-- [ ] Investor onboarding and aftercare, including Act 1173 renewals
+- [x] Investor onboarding architecture implemented through normalized profiles, KYC documents, workflow cases, immutable events, SLA tracking and permission-gated review
+- [x] Investor profile creation and resumable backfill
+- [x] KYC document catalogue, private quarantine storage, checksums and authorized downloads
+- [x] Investor onboarding submission, staff review, action-required, approval and rejection workflow
+- [x] Immutable onboarding events, activity audit, permissions, SLA dates and queued notifications
+- [x] Investor onboarding portal and cursor-paginated staff review workspace
+- [ ] Automated malware scanner integration and compliance-provider checks
+- [ ] Normalized investor organizations, memberships and addresses
+- [ ] Investor aftercare cases, interactions, tasks and inquiry conversion
+- [ ] Act 1173 renewal rules after authoritative legal/process confirmation
 - [ ] Certificates and anti-forgery QR verification
 - [ ] Investor-to-business matchmaking
 - [ ] ORC, GIS and payment integrations
@@ -94,6 +103,7 @@ These programme components are named in the broader concept material but are not
 - [x] Domain-model tests verify UUIDs, relationships, casts and event immutability
 - [x] Public discovery tests verify visibility, filters, pagination and bounded queries
 - [x] Administrative workflow tests verify permissions, transitions, SLA, audit and notifications
+- [x] Investor onboarding tests verify registration, backfill, KYC gates, private storage, ownership, permissions, audit and decisions
 - [x] Frontend production assets compile through Vite
 
 ## Data Dependencies

@@ -15,11 +15,13 @@ use Illuminate\View\View;
 
 class OpportunityReferenceDataController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, ?string $section = null): View
     {
         $this->authorizeManagement($request);
+        abort_unless(in_array($section, [null, 'sectors', 'sub-sectors', 'enterprise-types'], true), 404);
 
         return view('admin.reference-data.index', [
+            'section' => $section,
             'sectors' => Sector::query()
                 ->select('id', 'uuid', 'code', 'name', 'description', 'is_active', 'sort_order')
                 ->withCount(['subSectors', 'opportunities'])
