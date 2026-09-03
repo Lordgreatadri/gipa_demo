@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApiTokenSession;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
@@ -40,6 +41,11 @@ class NewPasswordController extends Controller
                     'password' => Hash::make($password),
                     'remember_token' => Str::random(60),
                 ])->save();
+
+                ApiTokenSession::query()
+                    ->where('user_id', $user->id)
+                    ->whereNull('revoked_at')
+                    ->update(['revoked_at' => now()]);
 
                 event(new PasswordReset($user));
             },

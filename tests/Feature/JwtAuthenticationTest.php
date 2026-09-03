@@ -8,6 +8,7 @@ use App\Models\Sector;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class JwtAuthenticationTest extends TestCase
@@ -27,7 +28,7 @@ class JwtAuthenticationTest extends TestCase
         $region = Region::create(['code' => 'GA', 'name' => 'Greater Accra']);
 
         $login = $this->postJson('/api/v1/auth/login', [
-            'email' => $user->email,
+            'email' => 'Investor@Example.test',
             'password' => 'Secure-password-123',
         ])->assertOk()->assertJsonStructure(['token_type', 'access_token', 'expires_in', 'refresh_token', 'refresh_expires_at']);
 
@@ -66,5 +67,35 @@ class JwtAuthenticationTest extends TestCase
 
         $this->postJson('/api/v1/auth/login', ['email' => $user->email, 'password' => 'Secure-password-123'])
             ->assertUnprocessable();
+    }
+
+    public function test_password_reset_revokes_all_api_sessions(): void
+    {
+        $this->withServerVariables(['REMOTE_ADDR' => '192.0.2.'.random_int(1, 254)]);
+        $user = User::factory()->create([
+            'email' => 'recovery@example.test',
+            'password' => Hash::make('Compromised-password-123'),
+        ]);
+
+        $login = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'Compromised-password-123',
+        ])->assertOk();
+
+        $this->post(route('password.update'), [
+            'token' => Password::broker()->createToken($user),
+            'email' => $user->email,
+            'password' => 'Recovered-password-456',
+            'password_confirmation' => 'Recovered-password-456',
+        ])->assertRedirect(route('login'));
+
+        $this->postJson('/api/v1/auth/refresh', [
+            'refresh_token' => $login->json('refresh_token'),
+        ])->assertUnprocessable();
+
+        $this->assertDatabaseMissing('api_token_sessions', [
+            'user_id' => $user->id,
+            'revoked_at' => null,
+        ]);
     }
 }

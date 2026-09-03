@@ -43,7 +43,12 @@ class InvestorPortalController extends Controller
             ->groupBy(fn (array $match) => $match['opportunity']->sector->name)
             ->map->count()
             ->sortDesc();
-        $evidenceStatuses = collect(['accepted', 'pending', 'rejected'])
+        $evidenceStatuses = collect([
+            InvestorDocument::STATUS_QUARANTINED,
+            InvestorDocument::STATUS_ACCEPTED,
+            InvestorDocument::STATUS_REJECTED,
+            InvestorDocument::STATUS_EXPIRED,
+        ])
             ->mapWithKeys(fn (string $status) => [$status => $case?->documents->where('status', $status)->count() ?? 0]);
 
         return view('portal.investor', [
@@ -52,8 +57,8 @@ class InvestorPortalController extends Controller
             'matchPreference' => $preference,
             'matches' => $matches,
             'matchSectorChart' => ['type' => 'bar', 'labels' => $matchSectors->keys(), 'datasets' => [['label' => 'Matched opportunities', 'data' => $matchSectors->values()]]],
-            'evidenceChart' => ['type' => 'doughnut', 'labels' => $evidenceStatuses->keys()->map(fn (string $status) => str($status)->title()), 'datasets' => [['label' => 'Documents', 'data' => $evidenceStatuses->values()]]],
-            'sectors' => Sector::query()->select(['id', 'name'])->orderBy('name')->get(),
+            'evidenceChart' => ['type' => 'doughnut', 'labels' => $evidenceStatuses->keys()->map(fn (string $status) => str($status)->title()->toString()), 'datasets' => [['label' => 'Documents', 'data' => $evidenceStatuses->values()]]],
+            'sectors' => Sector::query()->select(['id', 'name'])->where('is_active', true)->orderBy('name')->get(),
             'regions' => Region::query()->select(['id', 'name'])->orderBy('name')->get(),
             'inquiryCount' => $profile->user->investorInquiries()->count(),
             'documentTypes' => InvestorDocumentType::query()

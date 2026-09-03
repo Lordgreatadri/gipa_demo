@@ -39,7 +39,11 @@ class CatalogController extends Controller
 
     public function sectors(): AnonymousResourceCollection
     {
-        return SectorResource::collection(Sector::query()->select(['id', 'uuid', 'code', 'name'])->orderBy('name')->paginate(50));
+        return SectorResource::collection(Sector::query()
+            ->select(['id', 'uuid', 'code', 'name'])
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->paginate(50));
     }
 
     public function subSectors(Request $request): AnonymousResourceCollection
@@ -48,6 +52,8 @@ class CatalogController extends Controller
 
         return SubSectorResource::collection(SubSector::query()
             ->select(['id', 'uuid', 'sector_id', 'code', 'name'])
+            ->where('is_active', true)
+            ->whereHas('sector', fn (Builder $sector) => $sector->where('is_active', true))
             ->with('sector:id,uuid,code,name')
             ->when($request->string('sector')->toString(), fn (Builder $query, string $uuid) => $query->whereHas('sector', fn (Builder $sector) => $sector->where('uuid', $uuid)))
             ->orderBy('name')

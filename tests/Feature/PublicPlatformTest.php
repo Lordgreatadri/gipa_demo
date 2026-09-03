@@ -2,6 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\InvestorDocument;
+use App\Models\InvestorDocumentType;
+use App\Models\InvestorOnboardingCase;
+use App\Models\InvestorProfile;
+use App\Models\Sector;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -75,6 +80,44 @@ class PublicPlatformTest extends TestCase
             ->assertSee('Secure investor portal')
             ->assertSee('Opportunity matches')
             ->assertDontSee('Primary navigation');
+    }
+
+    public function test_investor_portal_charts_review_statuses_and_lists_only_active_sectors(): void
+    {
+        $investor = User::factory()->create([
+            'account_type' => User::ACCOUNT_INVESTOR,
+            'email_verified_at' => now(),
+        ]);
+        $profile = InvestorProfile::create([
+            'user_id' => $investor->id,
+            'display_name' => 'Ama Mensah',
+        ]);
+        $case = InvestorOnboardingCase::create([
+            'reference' => 'ONB-2026-0001',
+            'investor_profile_id' => $profile->id,
+        ]);
+        $type = InvestorDocumentType::create(['code' => 'IDENTITY', 'name' => 'Identity document']);
+        foreach ([InvestorDocument::STATUS_QUARANTINED, InvestorDocument::STATUS_EXPIRED] as $status) {
+            InvestorDocument::create([
+                'investor_profile_id' => $profile->id,
+                'investor_onboarding_case_id' => $case->id,
+                'document_type_id' => $type->id,
+                'status' => $status,
+                'checksum_sha256' => str_repeat('a', 64),
+            ]);
+        }
+        $activeSector = Sector::create(['code' => 'AGR', 'name' => 'Agriculture', 'is_active' => true]);
+        $inactiveSector = Sector::create(['code' => 'OLD', 'name' => 'Retired sector', 'is_active' => false]);
+
+        $response = $this->actingAs($investor)->get(route('investor.dashboard'))->assertOk();
+
+        $this->assertSame(
+            ['Quarantined', 'Accepted', 'Rejected', 'Expired'],
+            $response->viewData('evidenceChart')['labels']->all(),
+        );
+        $this->assertSame([1, 0, 0, 1], $response->viewData('evidenceChart')['datasets'][0]['data']->all());
+        $this->assertTrue($response->viewData('sectors')->contains($activeSector));
+        $this->assertFalse($response->viewData('sectors')->contains($inactiveSector));
     }
 
     public function test_health_endpoint_reports_service_availability(): void

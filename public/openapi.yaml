@@ -2,30 +2,41 @@ openapi: 3.1.0
 info:
   title: IOMP Platform API
   version: 1.0.0
-  description: Versioned discovery, certificate verification, authentication, and investor matchmaking API.
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    Versioned API for discovering investment opportunities, verifying certificates,
+    and managing investor matchmaking preferences.
+
+    Public endpoints are rate limited. Investor endpoints require an access token
+    issued by `/auth/login`; use **Authorize** to send it as a Bearer token.
 servers:
   - url: /api/v1
+    description: Current host
+security: []
 tags:
   - name: Authentication
+    description: Issue, rotate, and revoke API token sessions.
   - name: Public catalog
+    description: Reference data used by opportunity discovery and investor preferences.
   - name: Opportunities
+    description: Search public opportunities and submit investor inquiries.
   - name: Investors
+    description: Authenticated investor profiles, mandates, and opportunity matches.
   - name: Certificates
+    description: Public verification of digitally signed certificates.
 paths:
   /auth/login:
     post:
       tags: [Authentication]
+      operationId: login
       summary: Issue an access JWT and opaque refresh token
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [email, password]
-              properties:
-                email: { type: string, format: email }
-                password: { type: string, format: password }
+            schema: { $ref: "#/components/schemas/LoginRequest" }
       responses:
         "200":
           description: Token pair issued
@@ -33,19 +44,17 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/TokenPair" }
         "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /auth/refresh:
     post:
       tags: [Authentication]
+      operationId: refreshToken
       summary: Rotate a refresh token and issue a new token pair
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [refresh_token]
-              properties:
-                refresh_token: { type: string, minLength: 96, maxLength: 96 }
+            schema: { $ref: "#/components/schemas/RefreshTokenRequest" }
       responses:
         "200":
           description: Rotated token pair
@@ -53,84 +62,136 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/TokenPair" }
         "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /auth/logout:
     post:
       tags: [Authentication]
+      operationId: logout
       summary: Revoke the current access and refresh session
       security: [{ bearerAuth: [] }]
       responses:
-        "200": { description: Session revoked }
+        "200":
+          description: Session revoked
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MessageResponse" }
+              example:
+                message: Token session revoked.
         "401": { $ref: "#/components/responses/Unauthenticated" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /regions:
     get:
       tags: [Public catalog]
+      operationId: listRegions
       summary: List regions
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
       responses:
         "200":
           description: Paginated region collection
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/PaginatedCollection" }
+              schema: { $ref: "#/components/schemas/RegionCollection" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /districts:
     get:
       tags: [Public catalog]
+      operationId: listDistricts
       summary: List published districts
       parameters:
         - { $ref: "#/components/parameters/Page" }
         - name: region
           in: query
+          description: Return districts in this region UUID.
           schema: { type: string, format: uuid }
       responses:
         "200":
           description: Paginated district collection
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/PaginatedCollection" }
+              schema: { $ref: "#/components/schemas/DistrictCollection" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /sectors:
     get:
       tags: [Public catalog]
-      summary: List sectors
+      operationId: listSectors
+      summary: List active sectors
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
       responses:
         "200":
           description: Paginated sector collection
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/PaginatedCollection" }
+              schema: { $ref: "#/components/schemas/SectorCollection" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /sub-sectors:
     get:
       tags: [Public catalog]
-      summary: List sub-sectors
+      operationId: listSubSectors
+      summary: List active sub-sectors
       parameters:
         - { $ref: "#/components/parameters/Page" }
         - name: sector
           in: query
+          description: Return sub-sectors belonging to this active sector UUID.
           schema: { type: string, format: uuid }
       responses:
         "200":
           description: Paginated sub-sector collection
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/PaginatedCollection" }
+              schema: { $ref: "#/components/schemas/SubSectorCollection" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /opportunities:
     get:
       tags: [Opportunities]
+      operationId: searchOpportunities
       summary: Search published opportunities
       parameters:
         - { $ref: "#/components/parameters/Page" }
-        - { name: query, in: query, schema: { type: string, maxLength: 120 } }
-        - { name: region, in: query, schema: { type: string, format: uuid } }
-        - { name: district, in: query, schema: { type: string, format: uuid } }
-        - { name: sector, in: query, schema: { type: string, format: uuid } }
-        - { name: type, in: query, schema: { type: string, format: uuid } }
+        - name: query
+          in: query
+          description: Search opportunity titles, overviews, and locations.
+          schema: { type: string, maxLength: 100 }
+          example: solar processing
+        - name: region
+          in: query
+          schema: { type: string, format: uuid }
+        - name: district
+          in: query
+          schema: { type: string, format: uuid }
+        - name: sector
+          in: query
+          schema: { type: string, format: uuid }
+        - name: type
+          in: query
+          description: Enterprise type UUID.
+          schema: { type: string, format: uuid }
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [approved, active, completed, cancelled]
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, amount_asc, amount_desc]
       responses:
         "200":
           description: Paginated opportunity collection
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/PaginatedCollection" }
+              schema: { $ref: "#/components/schemas/OpportunityCollection" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /opportunities/{uuid}:
     get:
       tags: [Opportunities]
+      operationId: getOpportunity
       summary: Get one published opportunity
       parameters:
         - { $ref: "#/components/parameters/Uuid" }
@@ -139,11 +200,35 @@ paths:
           description: Published opportunity
           content:
             application/json:
-              schema: { type: object }
-        "404": { description: Opportunity not found or not public }
+              schema: { $ref: "#/components/schemas/OpportunityResponse" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /opportunities/{uuid}/inquiries:
+    post:
+      tags: [Opportunities]
+      operationId: createOpportunityInquiry
+      summary: Submit an investor inquiry for a published opportunity
+      description: Limited to five submissions per minute per IP address.
+      parameters:
+        - { $ref: "#/components/parameters/Uuid" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InquiryRequest" }
+      responses:
+        "201":
+          description: Inquiry accepted and assigned a reference
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InquiryCreatedResponse" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /certificates/{token}/verify:
     get:
       tags: [Certificates]
+      operationId: verifyCertificate
       summary: Verify a certificate using its opaque public token
       parameters:
         - name: token
@@ -151,21 +236,38 @@ paths:
           required: true
           schema: { type: string, minLength: 64, maxLength: 64 }
       responses:
-        "200": { description: Public certificate validity snapshot }
-        "404": { description: Certificate not found }
+        "200":
+          description: Public certificate validity snapshot
+          content:
+            application/json:
+              schema:
+                { $ref: "#/components/schemas/CertificateVerificationResponse" }
+        "404":
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                { $ref: "#/components/schemas/CertificateNotFoundResponse" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /investor/me:
     get:
       tags: [Investors]
+      operationId: getInvestorProfile
       summary: Get the authenticated investor profile
       security: [{ bearerAuth: [] }]
       responses:
         "200":
           description: Own investor profile without KYC evidence
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InvestorProfileResponse" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
-        "403": { description: Investor account required }
+        "403": { $ref: "#/components/responses/InvestorRequired" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /investor/preferences:
     put:
       tags: [Investors]
+      operationId: updateInvestorPreferences
       summary: Replace the authenticated investor's matching preferences
       security: [{ bearerAuth: [] }]
       requestBody:
@@ -174,12 +276,19 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/MatchPreferenceInput" }
       responses:
-        "200": { description: Preferences updated }
+        "200":
+          description: Preferences updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MatchPreferenceResponse" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/InvestorRequired" }
         "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
   /investor/matches:
     get:
       tags: [Investors]
+      operationId: listInvestorMatches
       summary: Get up to 12 explainable opportunity matches
       security: [{ bearerAuth: [] }]
       responses:
@@ -188,47 +297,116 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    maxItems: 12
-                    items: { $ref: "#/components/schemas/OpportunityMatch" }
+                { $ref: "#/components/schemas/OpportunityMatchesResponse" }
+              examples:
+                matches:
+                  summary: Ranked opportunities
+                  value:
+                    data:
+                      - score: 98
+                        reasons:
+                          - Preferred sector
+                          - Preferred region
+                          - Investment range
+                          - District readiness 82%
+                        opportunity:
+                          uuid: 7d3bc2ad-f6bb-4ca8-b521-5ca2c71ac489
+                          title: Greater Accra Solar Cold-Chain Network
+                          district: Tema Metropolitan
+                          region: Greater Accra
+                          sector: Agriculture
+                          amount: "8500000.00"
+                          currency: GHS
+                          web_url: https://iomp.gov.gh/opportunities/7d3bc2ad-f6bb-4ca8-b521-5ca2c71ac489
+                noPreferences:
+                  summary: Preferences have not been configured
+                  value:
+                    data: []
+                    meta:
+                      message: Set investment preferences to generate matches.
         "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/InvestorRequired" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: Access JWT returned by the login or refresh operation.
   parameters:
     Page:
       name: page
       in: query
+      description: One-based result page.
       schema: { type: integer, minimum: 1 }
+      example: 1
     Uuid:
       name: uuid
       in: path
       required: true
       schema: { type: string, format: uuid }
+      example: 7d3bc2ad-f6bb-4ca8-b521-5ca2c71ac489
   responses:
     Unauthenticated:
       description: Missing, expired, malformed, or revoked access token
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/MessageResponse" }
+          example:
+            message: Authentication required.
+    InvestorRequired:
+      description: The authenticated account is not an active investor account
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/MessageResponse" }
+          example:
+            message: Investor account required.
+    NotFound:
+      description: The requested public resource does not exist
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/MessageResponse" }
+          example:
+            message: Resource not found.
     ValidationError:
       description: Request validation failed
       content:
         application/json:
-          schema:
-            type: object
-            properties:
-              message: { type: string }
-              errors:
-                {
-                  type: object,
-                  additionalProperties:
-                    { type: array, items: { type: string } },
-                }
+          schema: { $ref: "#/components/schemas/ValidationError" }
+          example:
+            message: The email field must be a valid email address.
+            errors:
+              email:
+                - The email field must be a valid email address.
+    TooManyRequests:
+      description: The endpoint's request limit has been exceeded
+      headers:
+        Retry-After:
+          description: Seconds until another request may be attempted.
+          schema: { type: integer, minimum: 1 }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/MessageResponse" }
+          example:
+            message: Too Many Attempts.
   schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 255 }
+        password: { type: string, format: password }
+      example:
+        email: investor@example.com
+        password: Secure-password-123
+    RefreshTokenRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token: { type: string, minLength: 96, maxLength: 96 }
+      example:
+        refresh_token: 7f8d2e4a9b6c1d3e5f7a8b9c0d1e2f3a4b6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f0a1b3c5d7e9f1a2b4c
     TokenPair:
       type: object
       required:
@@ -241,17 +419,437 @@ components:
         ]
       properties:
         token_type: { type: string, const: Bearer }
-        access_token: { type: string }
+        access_token:
+          type: string
+          description: Short-lived HS256 JSON Web Token.
         expires_in: { type: integer, description: Seconds until access expiry }
-        refresh_token: { type: string }
+        refresh_token: { type: string, minLength: 96, maxLength: 96 }
         refresh_expires_at: { type: string, format: date-time }
-    PaginatedCollection:
+      example:
+        token_type: Bearer
+        access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJpb21wIiwic3ViIjoiZjhhYzRiMTMtM2U1Ny00ZDc4LTlhNmItMmM4ZjEwYjNkNTYxIiwiYXVkIjoiaW9tcC1hcGkiLCJleHAiOjE3ODg0Mjg3MDB9.demo-signature
+        expires_in: 900
+        refresh_token: 7f8d2e4a9b6c1d3e5f7a8b9c0d1e2f3a4b6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f0a1b3c5d7e9f1a2b4c
+        refresh_expires_at: "2026-10-03T10:30:00+00:00"
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+      example:
+        message: Operation completed successfully.
+    ValidationError:
+      type: object
+      required: [message, errors]
+      properties:
+        message: { type: string }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+    PaginationLinks:
+      type: object
+      required: [first, last, prev, next]
+      properties:
+        first: { type: string, format: uri }
+        last: { type: string, format: uri }
+        prev: { type: [string, "null"], format: uri }
+        next: { type: [string, "null"], format: uri }
+      example:
+        first: https://iomp.gov.gh/api/v1/opportunities?page=1
+        last: https://iomp.gov.gh/api/v1/opportunities?page=4
+        prev: null
+        next: https://iomp.gov.gh/api/v1/opportunities?page=2
+    PaginationMetaLink:
+      type: object
+      required: [url, label, active]
+      properties:
+        url: { type: [string, "null"], format: uri }
+        label: { type: string }
+        active: { type: boolean }
+    PaginationMeta:
+      type: object
+      required:
+        [current_page, from, last_page, links, path, per_page, to, total]
+      properties:
+        current_page: { type: integer, minimum: 1 }
+        from: { type: [integer, "null"], minimum: 1 }
+        last_page: { type: integer, minimum: 1 }
+        links:
+          type: array
+          items: { $ref: "#/components/schemas/PaginationMetaLink" }
+        path: { type: string, format: uri }
+        per_page: { type: integer, minimum: 1 }
+        to: { type: [integer, "null"], minimum: 1 }
+        total: { type: integer, minimum: 0 }
+      example:
+        current_page: 1
+        from: 1
+        last_page: 4
+        links:
+          - { url: null, label: Previous, active: false }
+          - {
+              url: "https://iomp.gov.gh/api/v1/opportunities?page=1",
+              label: "1",
+              active: true,
+            }
+          - {
+              url: "https://iomp.gov.gh/api/v1/opportunities?page=2",
+              label: "Next",
+              active: false,
+            }
+        path: https://iomp.gov.gh/api/v1/opportunities
+        per_page: 12
+        to: 12
+        total: 39
+    Region:
+      type: object
+      required: [uuid, code, name, capital]
+      properties:
+        uuid: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        capital: { type: [string, "null"] }
+      example:
+        uuid: 76f3db4b-26bf-4f31-89f8-258f52c0be4c
+        code: GAR
+        name: Greater Accra
+        capital: Accra
+    RegionCollection:
       type: object
       required: [data, links, meta]
       properties:
-        data: { type: array, items: { type: object } }
-        links: { type: object }
-        meta: { type: object }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Region" }
+        links: { $ref: "#/components/schemas/PaginationLinks" }
+        meta: { $ref: "#/components/schemas/PaginationMeta" }
+    Sector:
+      type: object
+      required: [uuid, code, name]
+      properties:
+        uuid: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+      example:
+        uuid: de74c2d1-4c9a-47c8-bef7-9d67f3f2a19a
+        code: AGR
+        name: Agriculture and Agro-processing
+    SectorCollection:
+      type: object
+      required: [data, links, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Sector" }
+        links: { $ref: "#/components/schemas/PaginationLinks" }
+        meta: { $ref: "#/components/schemas/PaginationMeta" }
+    SubSector:
+      type: object
+      required: [uuid, code, name, sector]
+      properties:
+        uuid: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        sector: { $ref: "#/components/schemas/Sector" }
+      example:
+        uuid: ab5908b9-d91c-4421-a2e1-7f102b28e29e
+        code: AGR-COLD
+        name: Cold-chain logistics
+        sector:
+          uuid: de74c2d1-4c9a-47c8-bef7-9d67f3f2a19a
+          code: AGR
+          name: Agriculture and Agro-processing
+    SubSectorCollection:
+      type: object
+      required: [data, links, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/SubSector" }
+        links: { $ref: "#/components/schemas/PaginationLinks" }
+        meta: { $ref: "#/components/schemas/PaginationMeta" }
+    District:
+      type: object
+      required:
+        - uuid
+        - code
+        - name
+        - capital
+        - readiness_score
+        - population
+        - area_sq_km
+        - infrastructure_quality_score
+        - region
+        - published_opportunities_count
+        - links
+      properties:
+        uuid: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        capital: { type: [string, "null"] }
+        readiness_score: { type: [string, "null"], pattern: '^\d+(\.\d{2})?$' }
+        population: { type: [integer, "null"], minimum: 0 }
+        area_sq_km: { type: [string, "null"], pattern: '^\d+(\.\d{2})?$' }
+        infrastructure_quality_score:
+          { type: [string, "null"], pattern: '^\d+(\.\d{2})?$' }
+        region: { $ref: "#/components/schemas/Region" }
+        published_opportunities_count: { type: integer, minimum: 0 }
+        links: { $ref: "#/components/schemas/WebLink" }
+      example:
+        uuid: 3176a247-7417-4370-8aa6-65dbb24e4903
+        code: TMA
+        name: Tema Metropolitan
+        capital: Tema
+        readiness_score: "82.50"
+        population: 292773
+        area_sq_km: "87.80"
+        infrastructure_quality_score: "88.00"
+        region:
+          uuid: 76f3db4b-26bf-4f31-89f8-258f52c0be4c
+          code: GAR
+          name: Greater Accra
+          capital: Accra
+        published_opportunities_count: 6
+        links:
+          web: https://iomp.gov.gh/districts/3176a247-7417-4370-8aa6-65dbb24e4903
+    DistrictCollection:
+      type: object
+      required: [data, links, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/District" }
+        links: { $ref: "#/components/schemas/PaginationLinks" }
+        meta: { $ref: "#/components/schemas/PaginationMeta" }
+    NamedReference:
+      type: object
+      required: [uuid, name]
+      properties:
+        uuid: { type: string, format: uuid }
+        name: { type: string }
+    OpportunityDistrict:
+      type: object
+      required: [uuid, name, region]
+      properties:
+        uuid: { type: string, format: uuid }
+        name: { type: string }
+        region: { $ref: "#/components/schemas/NamedReference" }
+    OpportunityFinancial:
+      type: object
+      required:
+        - amount
+        - currency
+        - roi_percentage
+        - irr_percentage
+        - npv
+        - payback_period_months
+        - projected_revenue
+      properties:
+        amount: { type: [string, "null"], pattern: '^\d+(\.\d{2})?$' }
+        currency: { type: [string, "null"], enum: [GHS, USD, EUR, GBP, null] }
+        roi_percentage: { type: [string, "null"], pattern: '^\d+(\.\d{4})?$' }
+        irr_percentage: { type: [string, "null"], pattern: '^\d+(\.\d{4})?$' }
+        npv: { type: [string, "null"], pattern: '^-?\d+(\.\d{2})?$' }
+        payback_period_months: { type: [integer, "null"], minimum: 0 }
+        projected_revenue:
+          { type: [string, "null"], pattern: '^\d+(\.\d{2})?$' }
+    WebLink:
+      type: object
+      required: [web]
+      properties:
+        web: { type: string, format: uri }
+    Opportunity:
+      type: object
+      required:
+        - uuid
+        - title
+        - overview
+        - location_description
+        - latitude
+        - longitude
+        - status
+        - published_at
+        - district
+        - sector
+        - sub_sector
+        - enterprise_type
+        - financial
+        - links
+      properties:
+        uuid: { type: string, format: uuid }
+        title: { type: string }
+        overview: { type: string }
+        location_description: { type: [string, "null"] }
+        latitude: { type: [string, "null"] }
+        longitude: { type: [string, "null"] }
+        status:
+          type: string
+          enum: [approved, active, completed, cancelled]
+        published_at: { type: string, format: date-time }
+        district: { $ref: "#/components/schemas/OpportunityDistrict" }
+        sector: { $ref: "#/components/schemas/NamedReference" }
+        sub_sector:
+          oneOf:
+            - { $ref: "#/components/schemas/NamedReference" }
+            - { type: "null" }
+        enterprise_type: { $ref: "#/components/schemas/NamedReference" }
+        financial:
+          oneOf:
+            - { $ref: "#/components/schemas/OpportunityFinancial" }
+            - { type: "null" }
+        links: { $ref: "#/components/schemas/WebLink" }
+      example:
+        uuid: 7d3bc2ad-f6bb-4ca8-b521-5ca2c71ac489
+        title: Greater Accra Solar Cold-Chain Network
+        overview: Solar-powered cold storage hubs connecting smallholder farmers to urban markets.
+        location_description: Tema industrial enclave and surrounding agricultural corridors
+        latitude: "5.6698"
+        longitude: "-0.0166"
+        status: active
+        published_at: "2026-08-28T09:30:00.000000Z"
+        district:
+          uuid: 3176a247-7417-4370-8aa6-65dbb24e4903
+          name: Tema Metropolitan
+          region:
+            uuid: 76f3db4b-26bf-4f31-89f8-258f52c0be4c
+            name: Greater Accra
+        sector:
+          uuid: de74c2d1-4c9a-47c8-bef7-9d67f3f2a19a
+          name: Agriculture and Agro-processing
+        sub_sector:
+          uuid: ab5908b9-d91c-4421-a2e1-7f102b28e29e
+          name: Cold-chain logistics
+        enterprise_type:
+          uuid: 99652e67-530b-4d8a-9461-1147f594ed6a
+          name: Public-private partnership
+        financial:
+          amount: "8500000.00"
+          currency: GHS
+          roi_percentage: "18.5000"
+          irr_percentage: "16.2000"
+          npv: "2140000.00"
+          payback_period_months: 54
+          projected_revenue: "4200000.00"
+        links:
+          web: https://iomp.gov.gh/opportunities/7d3bc2ad-f6bb-4ca8-b521-5ca2c71ac489
+    OpportunityResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/Opportunity" }
+    OpportunityCollection:
+      type: object
+      required: [data, links, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Opportunity" }
+        links: { $ref: "#/components/schemas/PaginationLinks" }
+        meta: { $ref: "#/components/schemas/PaginationMeta" }
+    InquiryRequest:
+      type: object
+      required: [name, email, message, consent]
+      properties:
+        name: { type: string, maxLength: 255 }
+        organization: { type: [string, "null"], maxLength: 255 }
+        email: { type: string, format: email, maxLength: 255 }
+        phone: { type: [string, "null"], maxLength: 32 }
+        country:
+          type: [string, "null"]
+          minLength: 2
+          maxLength: 2
+          description: ISO 3166-1 alpha-2 country code.
+        subject: { type: [string, "null"], maxLength: 255 }
+        message: { type: string, minLength: 20, maxLength: 5000 }
+        consent:
+          type: boolean
+          const: true
+          description: Confirms consent to process the inquiry details.
+      example:
+        name: Ama Mensah
+        organization: Meridian Impact Partners
+        email: ama.mensah@example.com
+        phone: "+233 24 555 0198"
+        country: GH
+        subject: Request for investment memorandum
+        message: Please share the investment memorandum and the next steps for due diligence.
+        consent: true
+    InquiryCreatedResponse:
+      type: object
+      required: [message, reference]
+      properties:
+        message: { type: string }
+        reference: { type: string }
+      example:
+        message: Your inquiry has been received.
+        reference: INQ-20260903-A7K4Q2
+    CertificateVerification:
+      type: object
+      required:
+        - result
+        - certificate_number
+        - certificate_type
+        - holder_name
+        - organization_name
+        - project_name
+        - district
+        - issued_at
+        - expires_at
+        - checked_at
+      properties:
+        result:
+          type: string
+          enum:
+            [
+              authentic,
+              signature_invalid,
+              expired,
+              suspended,
+              revoked,
+              cancelled,
+              superseded,
+            ]
+        certificate_number: { type: string }
+        certificate_type: { type: string }
+        holder_name: { type: [string, "null"] }
+        organization_name: { type: [string, "null"] }
+        project_name: { type: [string, "null"] }
+        district: { type: string }
+        issued_at: { type: [string, "null"], format: date }
+        expires_at: { type: [string, "null"], format: date }
+        checked_at: { type: string, format: date-time }
+      example:
+        result: authentic
+        certificate_number: IOMP-GAR-2026-00482
+        certificate_type: Investor Due Diligence Certificate
+        holder_name: Ama Mensah
+        organization_name: Meridian Impact Partners
+        project_name: Greater Accra Solar Cold-Chain Network
+        district: Tema Metropolitan
+        issued_at: "2026-07-15"
+        expires_at: "2027-07-14"
+        checked_at: "2026-09-03T10:30:00+00:00"
+    CertificateVerificationResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/CertificateVerification" }
+    CertificateNotFoundResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [result, checked_at]
+          properties:
+            result: { type: string, const: not_found }
+            checked_at: { type: string, format: date-time }
+      example:
+        data:
+          result: not_found
+          checked_at: "2026-09-03T10:30:00+00:00"
     MatchPreferenceInput:
       type: object
       required: [sector_uuids, region_uuids, currency]
@@ -270,15 +868,138 @@ components:
             maxItems: 16,
             items: { type: string, format: uuid },
           }
-        minimum_investment: { type: number, minimum: 0, nullable: true }
-        maximum_investment: { type: number, minimum: 0, nullable: true }
+        minimum_investment: { type: [number, "null"], minimum: 0 }
+        maximum_investment:
+          type: [number, "null"]
+          minimum: 0
+          description: Must be greater than or equal to minimum_investment.
         currency: { type: string, enum: [GHS, USD, EUR, GBP] }
         minimum_readiness_score:
-          { type: number, minimum: 0, maximum: 100, nullable: true }
+          { type: [number, "null"], minimum: 0, maximum: 100 }
+      example:
+        sector_uuids:
+          - de74c2d1-4c9a-47c8-bef7-9d67f3f2a19a
+        region_uuids:
+          - 76f3db4b-26bf-4f31-89f8-258f52c0be4c
+        minimum_investment: 1000000
+        maximum_investment: 10000000
+        currency: GHS
+        minimum_readiness_score: 65
+    MatchPreference:
+      type: object
+      required:
+        - minimum_investment
+        - maximum_investment
+        - currency
+        - minimum_readiness_score
+        - sectors
+        - regions
+      properties:
+        minimum_investment: { type: [string, "null"] }
+        maximum_investment: { type: [string, "null"] }
+        currency: { type: string, enum: [GHS, USD, EUR, GBP] }
+        minimum_readiness_score: { type: [string, "null"] }
+        sectors:
+          type: array
+          items: { $ref: "#/components/schemas/NamedReference" }
+        regions:
+          type: array
+          items: { $ref: "#/components/schemas/NamedReference" }
+      example:
+        minimum_investment: "1000000.00"
+        maximum_investment: "10000000.00"
+        currency: GHS
+        minimum_readiness_score: "65.00"
+        sectors:
+          - uuid: de74c2d1-4c9a-47c8-bef7-9d67f3f2a19a
+            name: Agriculture and Agro-processing
+        regions:
+          - uuid: 76f3db4b-26bf-4f31-89f8-258f52c0be4c
+            name: Greater Accra
+    MatchPreferenceResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/MatchPreference" }
+    InvestorProfile:
+      type: object
+      required:
+        [
+          uuid,
+          display_name,
+          profile_type,
+          country_code,
+          onboarding_state,
+          status,
+          preferences,
+        ]
+      properties:
+        uuid: { type: string, format: uuid }
+        display_name: { type: string }
+        profile_type:
+          type: string
+          enum: [individual, organization_representative]
+        country_code: { type: string, minLength: 2, maxLength: 2 }
+        onboarding_state:
+          type: string
+          enum: [not_started, in_progress, submitted, verified, action_required]
+        status: { type: string, enum: [active, suspended, archived] }
+        preferences:
+          oneOf:
+            - { $ref: "#/components/schemas/MatchPreference" }
+            - { type: "null" }
+      example:
+        uuid: f8ac4b13-3e57-4d78-9a6b-2c8f10b3d561
+        display_name: Ama Mensah
+        profile_type: individual
+        country_code: GH
+        onboarding_state: verified
+        status: active
+        preferences:
+          minimum_investment: "1000000.00"
+          maximum_investment: "10000000.00"
+          currency: GHS
+          minimum_readiness_score: "65.00"
+          sectors:
+            - uuid: de74c2d1-4c9a-47c8-bef7-9d67f3f2a19a
+              name: Agriculture and Agro-processing
+          regions:
+            - uuid: 76f3db4b-26bf-4f31-89f8-258f52c0be4c
+              name: Greater Accra
+    InvestorProfileResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/InvestorProfile" }
+    MatchedOpportunity:
+      type: object
+      required:
+        [uuid, title, district, region, sector, amount, currency, web_url]
+      properties:
+        uuid: { type: string, format: uuid }
+        title: { type: string }
+        district: { type: string }
+        region: { type: string }
+        sector: { type: string }
+        amount: { type: [string, "null"] }
+        currency: { type: [string, "null"] }
+        web_url: { type: string, format: uri }
     OpportunityMatch:
       type: object
       required: [score, reasons, opportunity]
       properties:
         score: { type: integer, minimum: 0, maximum: 100 }
         reasons: { type: array, items: { type: string } }
-        opportunity: { type: object }
+        opportunity: { $ref: "#/components/schemas/MatchedOpportunity" }
+    OpportunityMatchesResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          maxItems: 12
+          items: { $ref: "#/components/schemas/OpportunityMatch" }
+        meta:
+          type: object
+          properties:
+            message: { type: string }

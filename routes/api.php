@@ -17,6 +17,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/districts', [CatalogController::class, 'districts'])->name('districts.index');
         Route::get('/sectors', [CatalogController::class, 'sectors'])->name('sectors.index');
         Route::get('/sub-sectors', [CatalogController::class, 'subSectors'])->name('sub-sectors.index');
+        Route::get('/opportunities', [ApiOpportunityController::class, 'index'])->name('opportunities.index');
+        Route::get('/opportunities/{opportunity}', [ApiOpportunityController::class, 'show'])->name('opportunities.show');
     });
     Route::middleware(['jwt', 'throttle:api-protected'])->prefix('investor')->name('investor.')->group(function () {
         Route::get('/me', [InvestorController::class, 'show'])->name('show');
@@ -26,8 +28,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('/certificates/{token}/verify', [CertificateVerificationController::class, 'api'])
         ->middleware('throttle:api-certificate-verification')
         ->name('certificates.verify');
-    Route::get('/opportunities', [ApiOpportunityController::class, 'index'])->name('opportunities.index');
-    Route::get('/opportunities/{opportunity}', [ApiOpportunityController::class, 'show'])->name('opportunities.show');
     Route::post('/opportunities/{opportunity}/inquiries', [OpportunityController::class, 'storeInquiry'])
         ->middleware('throttle:api-inquiry')
         ->name('opportunities.inquiries.store');
