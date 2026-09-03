@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             $this->call([
                 DefaultRoleUserSeeder::class,
                 InvestorScenarioSeeder::class,
+                MatchmakingScenarioSeeder::class,
                 CertificateScenarioSeeder::class,
             ]);
         }

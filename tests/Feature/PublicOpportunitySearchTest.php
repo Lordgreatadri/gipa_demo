@@ -7,6 +7,7 @@ use App\Models\EnterpriseType;
 use App\Models\Opportunity;
 use App\Models\Region;
 use App\Models\Sector;
+use App\Models\SubSector;
 use App\Services\PublicOpportunitySearch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -87,6 +88,25 @@ class PublicOpportunitySearchTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.uuid', $visible->uuid)
             ->assertJsonPath('meta.per_page', PublicOpportunitySearch::PER_PAGE);
+    }
+
+    public function test_public_catalog_exposes_only_active_sectors_and_sub_sectors(): void
+    {
+        $activeSector = Sector::create(['code' => 'AGR', 'name' => 'Agriculture', 'is_active' => true]);
+        $inactiveSector = Sector::create(['code' => 'OLD', 'name' => 'Retired sector', 'is_active' => false]);
+        $activeSubSector = SubSector::create(['sector_id' => $activeSector->id, 'code' => 'AGR-PRO', 'name' => 'Agro-processing', 'is_active' => true]);
+        SubSector::create(['sector_id' => $activeSector->id, 'code' => 'AGR-OLD', 'name' => 'Retired activity', 'is_active' => false]);
+        SubSector::create(['sector_id' => $inactiveSector->id, 'code' => 'OLD-CHILD', 'name' => 'Inactive parent activity', 'is_active' => true]);
+
+        $this->getJson('/api/v1/sectors')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.uuid', $activeSector->uuid);
+
+        $this->getJson('/api/v1/sub-sectors')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.uuid', $activeSubSector->uuid);
     }
 
     public function test_public_inquiry_is_validated_and_linked_to_a_visible_opportunity(): void

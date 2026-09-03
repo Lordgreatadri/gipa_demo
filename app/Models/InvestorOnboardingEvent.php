@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\InvestorOnboardingCase;
-use App\Models\User;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -72,6 +72,12 @@
                             <a href="{{ route('staff.notifications.index') }}" @class(['is-current' => request()->routeIs('staff.notifications.index')])>Notification list</a>
                         </div>
                     </details>
+                    <details class="admin-nav-group" data-nav-group="guidance" @if(request()->routeIs('staff.guide')) open @endif>
+                        <summary><i data-lucide="files" aria-hidden="true"></i><span>Guidance</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+                        <div class="admin-nav-group__items">
+                            <a href="{{ route('staff.guide') }}" @class(['is-current' => request()->routeIs('staff.guide')])>Staff user guide</a>
+                        </div>
+                    </details>
                     @role('Super Administrator')
                         <details class="admin-nav-group" data-nav-group="users" @if(request()->routeIs('staff.users.*')) open @endif>
                             <summary><i data-lucide="users-round" aria-hidden="true"></i><span>Users &amp; access</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>

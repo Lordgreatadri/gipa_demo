@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CertificateController as AdminCertificateController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DistrictWorkflowController;
 use App\Http\Controllers\Admin\InvestorOnboardingController as AdminInvestorOnboardingController;
 use App\Http\Controllers\Admin\OpportunityReferenceDataController;
@@ -14,8 +14,9 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\InvestorPortalController;
-use App\Http\Controllers\PublicPortal\OpportunityController;
 use App\Http\Controllers\PublicPortal\CertificateVerificationController;
+use App\Http\Controllers\PublicPortal\DistrictController;
+use App\Http\Controllers\PublicPortal\OpportunityController;
 use App\Services\PublicOpportunityFilters;
 use Illuminate\Support\Facades\Route;
 
@@ -23,8 +24,13 @@ Route::get('/', function (PublicOpportunityFilters $filters) {
     return view('welcome', ['filters' => $filters->options()]);
 })->name('home');
 
+Route::view('/api/documentation', 'api-documentation')->name('api.documentation');
+Route::view('/guide', 'platform-guide')->name('platform.guide');
+
 Route::get('/opportunities', [OpportunityController::class, 'index'])->name('opportunities.index');
 Route::get('/opportunities/{opportunity}', [OpportunityController::class, 'show'])->name('opportunities.show');
+Route::get('/districts', [DistrictController::class, 'index'])->name('districts.index');
+Route::get('/districts/{district}', [DistrictController::class, 'show'])->name('districts.show');
 Route::post('/opportunities/{opportunity}/inquiries', [OpportunityController::class, 'storeInquiry'])
     ->middleware('throttle:5,1')
     ->name('opportunities.inquiries.store');
@@ -56,6 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('verified')->group(function () {
         Route::get('/portal', [InvestorPortalController::class, 'show'])->name('investor.dashboard');
         Route::patch('/portal/profile', [InvestorPortalController::class, 'updateProfile'])->name('investor.profile.update');
+        Route::put('/portal/match-preferences', [InvestorPortalController::class, 'updateMatchPreferences'])->middleware('throttle:20,1')->name('investor.match-preferences.update');
         Route::post('/portal/onboarding', [InvestorPortalController::class, 'start'])->name('investor.onboarding.start');
         Route::post('/portal/onboarding/{case}/documents', [InvestorPortalController::class, 'upload'])->middleware('throttle:10,1')->name('investor.onboarding.documents.store');
         Route::post('/portal/onboarding/{case}/submit', [InvestorPortalController::class, 'submit'])->middleware('throttle:5,1')->name('investor.onboarding.submit');
@@ -65,6 +72,7 @@ Route::middleware('auth')->group(function () {
 
 Route::prefix('staff')->name('staff.')->middleware(['auth', 'staff'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
+    Route::view('/guide', 'staff-guide')->name('guide');
     Route::get('/opportunity-workspace', [WorkspaceDirectoryController::class, 'opportunities'])->name('opportunity-workspace');
     Route::get('/regions', [WorkspaceDirectoryController::class, 'regions'])->name('regions.index');
     Route::get('/investment-workspace', [WorkspaceDirectoryController::class, 'investments'])->name('investments.overview');

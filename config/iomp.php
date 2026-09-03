@@ -29,6 +29,12 @@ return [
         'investor_onboarding_review_hours' => (int) env('INVESTOR_ONBOARDING_REVIEW_SLA_HOURS', 72),
     ],
 
+    'api_tokens' => [
+        'signing_key' => env('JWT_SIGNING_KEY'),
+        'access_ttl_minutes' => (int) env('JWT_ACCESS_TTL_MINUTES', 15),
+        'refresh_ttl_days' => (int) env('JWT_REFRESH_TTL_DAYS', 30),
+    ],
+
     'certificates' => [
         'active_key_id' => env('CERTIFICATE_ACTIVE_KEY_ID', 'iomp-mvp-1'),
         'algorithm' => env('CERTIFICATE_SIGNATURE_ALGORITHM', 'RSA-SHA256'),

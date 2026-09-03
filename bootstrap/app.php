@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Middleware\AuthenticateJwt;
+use App\Http\Middleware\EnsureStaffAccount;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Http\Middleware\EnsureStaffAccount;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['staff' => EnsureStaffAccount::class]);
+        $middleware->alias(['jwt' => AuthenticateJwt::class, 'staff' => EnsureStaffAccount::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

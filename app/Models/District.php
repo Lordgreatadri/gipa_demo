@@ -2,11 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Certificate;
-use App\Models\DistrictWorkflowEvent;
-use App\Models\Opportunity;
-use App\Models\Region;
-use App\Models\StaffDistrictAssignment;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

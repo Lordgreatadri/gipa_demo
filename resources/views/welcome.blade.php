@@ -46,7 +46,11 @@
                         <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>
                         <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.7 13.2A8.5 8.5 0 1 1 10.8 3.3a6.5 6.5 0 0 0 9.9 9.9Z"></path></svg>
                     </button>
-                    <a class="button button--outline header-login" href="{{ route('staff.login') }}">Staff login</a>
+                    @guest
+                        <a class="button button--outline header-login" href="{{ route('login') }}">Investor login</a>
+                    @else
+                        <a class="button button--outline header-login" href="{{ auth()->user()->isStaff() ? route('staff.dashboard') : route('investor.dashboard') }}">{{ auth()->user()->isStaff() ? 'Staff workspace' : 'Investor workspace' }}</a>
+                    @endguest
                     <button class="icon-button menu-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-navigation" aria-label="Open navigation">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
                     </button>
@@ -58,7 +62,12 @@
                 <a href="#map">Investment map</a>
                 <a href="#districts">Districts</a>
                 <a href="#insights">Insights</a>
-                <a href="{{ route('staff.login') }}">Staff login</a>
+                <a href="{{ route('platform.guide') }}">Investor guide</a>
+                @guest
+                    <a href="{{ route('login') }}">Investor login</a>
+                @else
+                    <a href="{{ auth()->user()->isStaff() ? route('staff.dashboard') : route('investor.dashboard') }}">{{ auth()->user()->isStaff() ? 'Staff workspace' : 'Investor workspace' }}</a>
+                @endguest
             </nav>
         </header>
 
@@ -145,7 +154,7 @@
                             <div class="opportunity-card__visual opportunity-card__visual--agri"><span class="status-pill">Active</span><span class="sector-icon" aria-hidden="true">Ag</span><div class="visual-bars"><i></i><i></i><i></i><i></i><i></i></div></div>
                             <div class="opportunity-card__body">
                                 <p class="card-meta">Agriculture &amp; agro-processing</p>
-                                <h3><a href="#">Integrated cassava processing facility</a></h3>
+                                <h3><a href="{{ route('opportunities.index') }}">Integrated cassava processing facility</a></h3>
                                 <p class="location"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg> Ejisu Municipal, Ashanti Region</p>
                                 <div class="card-investment"><span>Investment required</span><strong>GHS 24M</strong></div>
                             </div>
@@ -155,7 +164,7 @@
                             <div class="opportunity-card__visual opportunity-card__visual--energy"><span class="status-pill">Active</span><span class="sector-icon" aria-hidden="true">En</span><div class="sun-disc"></div><div class="solar-lines"></div></div>
                             <div class="opportunity-card__body">
                                 <p class="card-meta">Renewable energy</p>
-                                <h3><a href="#">Utility-scale solar energy park</a></h3>
+                                <h3><a href="{{ route('opportunities.index') }}">Utility-scale solar energy park</a></h3>
                                 <p class="location"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg> Savelugu Municipal, Northern Region</p>
                                 <div class="card-investment"><span>Investment required</span><strong>USD 8.2M</strong></div>
                             </div>
@@ -165,7 +174,7 @@
                             <div class="opportunity-card__visual opportunity-card__visual--logistics"><span class="status-pill">Active</span><span class="sector-icon" aria-hidden="true">Lo</span><div class="route-line"><i></i><i></i><i></i></div></div>
                             <div class="opportunity-card__body">
                                 <p class="card-meta">Transport &amp; logistics</p>
-                                <h3><a href="#">Western corridor logistics hub</a></h3>
+                                <h3><a href="{{ route('opportunities.index') }}">Western corridor logistics hub</a></h3>
                                 <p class="location"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg> Takoradi, Western Region</p>
                                 <div class="card-investment"><span>Investment required</span><strong>USD 12M</strong></div>
                             </div>
@@ -181,7 +190,7 @@
                         <p class="eyebrow"><span></span> Geospatial intelligence</p>
                         <h2 id="map-title">See where opportunity lives.</h2>
                         <p>Explore projects by region, district, sector, status and investment size through a single national view.</p>
-                        <a class="button button--gold" href="#">Open investment map</a>
+                        <a class="button button--gold" href="{{ route('districts.index') }}#investment-map">Open investment map</a>
                     </div>
                     <div class="map-showcase__facts" id="districts"><div><strong>261</strong><span>district profiles</span></div><div><strong>16</strong><span>regional economies</span></div><div><strong>1</strong><span>connected investment view</span></div></div>
                 </div>
@@ -191,10 +200,10 @@
                 <div class="shell">
                     <div class="section-heading section-heading--center"><div><p class="eyebrow eyebrow--dark">Priority sectors</p><h2 id="sectors-title">Invest in Ghana's growth story</h2><p>Move from national potential to district-level opportunity.</p></div></div>
                     <div class="sector-list">
-                        <a href="#"><span class="sector-list__number">01</span><strong>Agriculture</strong><small>32 opportunities</small><i aria-hidden="true">→</i></a>
-                        <a href="#"><span class="sector-list__number">02</span><strong>Renewable energy</strong><small>18 opportunities</small><i aria-hidden="true">→</i></a>
-                        <a href="#"><span class="sector-list__number">03</span><strong>Infrastructure</strong><small>24 opportunities</small><i aria-hidden="true">→</i></a>
-                        <a href="#"><span class="sector-list__number">04</span><strong>Tourism &amp; culture</strong><small>16 opportunities</small><i aria-hidden="true">→</i></a>
+                        @foreach(['Agriculture', 'Renewable energy', 'Infrastructure', 'Tourism & culture'] as $index => $sectorName)
+                            @php $sector = $filters['sectors']->first(fn ($item) => str($item->name)->lower()->contains(str($sectorName)->lower())); @endphp
+                            <a href="{{ route('opportunities.index', $sector ? ['sector' => $sector->uuid] : []) }}"><span class="sector-list__number">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span><strong>{{ $sectorName }}</strong><small>Explore opportunities</small><i aria-hidden="true">→</i></a>
+                        @endforeach
                     </div>
                 </div>
             </section>
@@ -215,10 +224,10 @@
                     <button class="install-button" type="button" data-install-app hidden>Install IOMP app</button>
                 </div>
                 <div class="footer-links"><strong>Explore</strong><a href="#opportunities">Opportunities</a><a href="#map">Investment map</a><a href="#districts">Districts</a></div>
-                <div class="footer-links"><strong>Resources</strong><a href="#insights">Insights</a><a href="#">API documentation</a><a href="#">Accessibility</a></div>
+                <div class="footer-links"><strong>Resources</strong><a href="#insights">Insights</a><a href="{{ route('platform.guide') }}">Investor guide</a><a href="{{ route('api.documentation') }}">API documentation</a></div>
                 <div class="footer-links"><strong>Contact</strong><a href="mailto:info@example.gov.gh">info@example.gov.gh</a><a href="tel:+233000000000">+233 (0) 00 000 0000</a><span>Accra, Ghana</span></div>
             </div>
-            <div class="shell site-footer__bottom"><span>&copy; {{ date('Y') }} IOMP. Republic of Ghana.</span><div><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Data policy</a></div></div>
+            <div class="shell site-footer__bottom"><span>&copy; {{ date('Y') }} IOMP. Republic of Ghana.</span><div><span>Privacy</span><span>Terms</span><span>Data policy</span></div></div>
         </footer>
 
         <div class="connection-status" data-connection-status role="status" aria-live="polite" hidden></div>

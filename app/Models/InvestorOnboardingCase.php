@@ -2,10 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\InvestorDocument;
-use App\Models\InvestorOnboardingEvent;
-use App\Models\InvestorProfile;
-use App\Models\User;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,12 +13,19 @@ class InvestorOnboardingCase extends Model
     use GeneratesUuid, HasFactory;
 
     public const TYPE_INITIAL = 'initial_onboarding';
+
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_SUBMITTED = 'submitted';
+
     public const STATUS_UNDER_REVIEW = 'under_review';
+
     public const STATUS_ACTION_REQUIRED = 'action_required';
+
     public const STATUS_APPROVED = 'approved';
+
     public const STATUS_REJECTED = 'rejected';
+
     public const STATUS_WITHDRAWN = 'withdrawn';
 
     protected $attributes = [

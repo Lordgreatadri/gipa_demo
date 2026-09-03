@@ -11,8 +11,8 @@ Status reflects verified repository behavior. A checked item is implemented and 
 - [x] Versioned public opportunity API under `/api/v1`
 - [x] PWA manifest, service worker and offline fallback
 - [ ] Opportunity comparison
-- [ ] Interactive production map backed by approved district GeoJSON
-- [ ] Public district directory and district detail
+- [~] Interactive Leaflet opportunity point map implemented; approved district GeoJSON remains a production publication gate
+- [x] Public district directory and district detail
 
 ## Authentication And Access
 
@@ -25,7 +25,7 @@ Status reflects verified repository behavior. A checked item is implemented and 
 - [x] Normalized, audited multi-district officer assignments with active-period restrictions
 - [ ] MFA user experience and enforcement
 - [ ] User, role and permission management screens
-- [ ] JWT login and refresh for protected API routes
+- [x] JWT login, rotating refresh, database revocation and logout for protected API routes
 
 ## Region And District Management
 
@@ -74,7 +74,7 @@ Status reflects verified repository behavior. A checked item is implemented and 
 - [ ] Reports dashboard and exports
 - [ ] Central system, workflow and notification settings UI
 - [ ] Maintenance control UI, administrator exception and IP whitelist
-- [ ] OpenAPI / Swagger UI
+- [x] OpenAPI 3.1 contract and locally bundled Swagger UI
 - [ ] Administrative messaging and onboarding tour
 
 ## Extended Programme Components
@@ -105,7 +105,7 @@ These programme components are named in the broader concept material but are not
 - [ ] Automated evidence malware scanner and approved retention/export policy
 - [ ] JWT-protected field API and OpenAPI contract after authentication approval
 - [ ] Explicitly freshness-labelled offline synchronization after device/staleness approval
-- [ ] Investor-to-business matchmaking
+- [x] Explainable investor-to-opportunity matchmaking with normalized preferences and bounded candidate ranking
 - [ ] ORC, GIS and payment integrations
 - [ ] AI assistant with governed responses
 - [ ] Broader internal automation and operational dashboards

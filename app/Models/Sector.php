@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Opportunity;
-use App\Models\SubSector;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
