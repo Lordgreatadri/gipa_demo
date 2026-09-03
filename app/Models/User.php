@@ -2,14 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Certificate;
-use App\Models\CertificateVerification;
-use App\Models\District;
-use App\Models\InvestorInquiry;
-use App\Models\InvestorProfile;
-use App\Models\Opportunity;
-use App\Models\Region;
-use App\Models\StaffDistrictAssignment;
+use Database\Factories\UserFactory;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,7 +14,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use GeneratesUuid, HasFactory, HasRoles, Notifiable;
 
     public const ACCOUNT_INVESTOR = 'investor';

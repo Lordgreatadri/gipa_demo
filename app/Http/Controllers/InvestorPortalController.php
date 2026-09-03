@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\InvestorDocumentUploadRequest;
+use App\Http\Requests\InvestorMatchPreferenceRequest;
 use App\Http\Requests\InvestorProfileRequest;
 use App\Models\InvestorDocument;
 use App\Models\InvestorDocumentType;
 use App\Models\InvestorOnboardingCase;
 use App\Models\InvestorProfile;
+use App\Models\Region;
+use App\Models\Sector;
 use App\Models\User;
 use App\Services\InvestorOnboardingService;
+use App\Services\InvestorOpportunityMatcher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +26,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InvestorPortalController extends Controller
 {
-    public function show(Request $request): View
+    public function show(Request $request, InvestorOpportunityMatcher $matcher): View
     {
         $this->assertInvestor($request->user());
         $profile = $this->profile($request->user());
@@ -33,16 +37,45 @@ class InvestorPortalController extends Controller
             ])
             ->latest('id')
             ->first();
+        $preference = $profile->matchPreference()->with(['sectors:id', 'regions:id'])->first();
+        $matches = $preference ? $matcher->matches($preference) : collect();
+        $matchSectors = $matches
+            ->groupBy(fn (array $match) => $match['opportunity']->sector->name)
+            ->map->count()
+            ->sortDesc();
+        $evidenceStatuses = collect(['accepted', 'pending', 'rejected'])
+            ->mapWithKeys(fn (string $status) => [$status => $case?->documents->where('status', $status)->count() ?? 0]);
 
         return view('portal.investor', [
             'profile' => $profile,
             'case' => $case,
+            'matchPreference' => $preference,
+            'matches' => $matches,
+            'matchSectorChart' => ['type' => 'bar', 'labels' => $matchSectors->keys(), 'datasets' => [['label' => 'Matched opportunities', 'data' => $matchSectors->values()]]],
+            'evidenceChart' => ['type' => 'doughnut', 'labels' => $evidenceStatuses->keys()->map(fn (string $status) => str($status)->title()), 'datasets' => [['label' => 'Documents', 'data' => $evidenceStatuses->values()]]],
+            'sectors' => Sector::query()->select(['id', 'name'])->orderBy('name')->get(),
+            'regions' => Region::query()->select(['id', 'name'])->orderBy('name')->get(),
+            'inquiryCount' => $profile->user->investorInquiries()->count(),
             'documentTypes' => InvestorDocumentType::query()
                 ->where('is_active', true)
                 ->where(fn ($query) => $query->whereNull('applies_to_profile_type')->orWhere('applies_to_profile_type', $profile->profile_type))
                 ->orderBy('sort_order')
                 ->get(),
         ]);
+    }
+
+    public function updateMatchPreferences(InvestorMatchPreferenceRequest $request): RedirectResponse
+    {
+        $profile = $this->profile($request->user());
+        $data = $request->safe()->except(['sector_ids', 'region_ids']);
+
+        DB::transaction(function () use ($profile, $data, $request): void {
+            $preference = $profile->matchPreference()->updateOrCreate([], $data);
+            $preference->sectors()->sync($request->validated('sector_ids'));
+            $preference->regions()->sync($request->validated('region_ids'));
+        });
+
+        return to_route('investor.dashboard')->with('status', 'Investment preferences updated. Your matches have been refreshed.');
     }
 
     public function updateProfile(InvestorProfileRequest $request): RedirectResponse

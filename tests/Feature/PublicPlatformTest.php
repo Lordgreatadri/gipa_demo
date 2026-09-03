@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,6 +16,65 @@ class PublicPlatformTest extends TestCase
             ->assertOk()
             ->assertSee('Investment Opportunities Mapping Project')
             ->assertSee('manifest.webmanifest');
+    }
+
+    public function test_guest_can_access_investor_login_and_public_guide(): void
+    {
+        $this->get(route('login'))
+            ->assertOk();
+
+        $this->get(route('platform.guide'))
+            ->assertOk()
+            ->assertSee('Investor user guide')
+            ->assertSee('Complete secure KYC onboarding')
+            ->assertDontSee('/staff/login');
+    }
+
+    public function test_public_navigation_replaces_login_with_the_investor_workspace_after_authentication(): void
+    {
+        $investor = User::factory()->create([
+            'account_type' => User::ACCOUNT_INVESTOR,
+            'email_verified_at' => now(),
+        ]);
+
+        $this->actingAs($investor)
+            ->get(route('home'))
+            ->assertOk()
+            ->assertSee('Investor workspace')
+            ->assertDontSee('Investor login');
+    }
+
+    public function test_staff_guide_requires_a_staff_account(): void
+    {
+        $this->get(route('staff.guide'))
+            ->assertRedirect(route('login'));
+
+        $investor = User::factory()->create(['account_type' => User::ACCOUNT_INVESTOR]);
+        $this->actingAs($investor)
+            ->get(route('staff.guide'))
+            ->assertForbidden();
+
+        $staff = User::factory()->create(['account_type' => User::ACCOUNT_STAFF]);
+        $this->actingAs($staff)
+            ->get(route('staff.guide'))
+            ->assertOk()
+            ->assertSee('/staff/login')
+            ->assertSee('Staff user guide');
+    }
+
+    public function test_verified_investor_portal_uses_authenticated_workspace_navigation(): void
+    {
+        $investor = User::factory()->create([
+            'account_type' => User::ACCOUNT_INVESTOR,
+            'email_verified_at' => now(),
+        ]);
+
+        $this->actingAs($investor)
+            ->get(route('investor.dashboard'))
+            ->assertOk()
+            ->assertSee('Secure investor portal')
+            ->assertSee('Opportunity matches')
+            ->assertDontSee('Primary navigation');
     }
 
     public function test_health_endpoint_reports_service_availability(): void

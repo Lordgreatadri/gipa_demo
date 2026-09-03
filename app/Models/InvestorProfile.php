@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use App\Models\Certificate;
-use App\Models\InvestorDocument;
-use App\Models\InvestorOnboardingCase;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InvestorProfile extends Model
@@ -17,14 +15,23 @@ class InvestorProfile extends Model
     use GeneratesUuid, HasFactory, SoftDeletes;
 
     public const TYPE_INDIVIDUAL = 'individual';
+
     public const TYPE_ORGANIZATION_REPRESENTATIVE = 'organization_representative';
+
     public const ONBOARDING_NOT_STARTED = 'not_started';
+
     public const ONBOARDING_IN_PROGRESS = 'in_progress';
+
     public const ONBOARDING_SUBMITTED = 'submitted';
+
     public const ONBOARDING_VERIFIED = 'verified';
+
     public const ONBOARDING_ACTION_REQUIRED = 'action_required';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_SUSPENDED = 'suspended';
+
     public const STATUS_ARCHIVED = 'archived';
 
     protected $attributes = [
@@ -85,5 +92,10 @@ class InvestorProfile extends Model
     public function certificates(): HasMany
     {
         return $this->hasMany(Certificate::class);
+    }
+
+    public function matchPreference(): HasOne
+    {
+        return $this->hasOne(InvestorMatchPreference::class);
     }
 }

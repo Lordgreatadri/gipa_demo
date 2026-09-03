@@ -150,7 +150,7 @@ class InvestorScenarioSeeder extends Seeder
         }
 
         foreach ($events as $position => [$action, $from, $to, $actor, $reason]) {
-                $case->events()->firstOrCreate(['action' => $action], [
+            $case->events()->firstOrCreate(['action' => $action], [
                 'actor_id' => $actor?->id,
                 'from_status' => $from,
                 'to_status' => $to,

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4f349845c58fd09df8a83e7d3b0764cf",
+    "content-hash": "a458c0ef73e0a9f0ee1eb2aeb3b93b77",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -1352,6 +1352,72 @@
                 "source": "https://github.com/ezyang/htmlpurifier/tree/v4.19.0"
             },
             "time": "2025-10-17T16:34:55+00:00"
+        },
+        {
+            "name": "firebase/php-jwt",
+            "version": "v7.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/googleapis/php-jwt.git",
+                "reference": "b374a5d1a4f1f67fadc2165cdb284645945e2fc0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/googleapis/php-jwt/zipball/b374a5d1a4f1f67fadc2165cdb284645945e2fc0",
+                "reference": "b374a5d1a4f1f67fadc2165cdb284645945e2fc0",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "^7.4",
+                "phpfastcache/phpfastcache": "^9.2",
+                "phpseclib/phpseclib": "~3.0",
+                "phpspec/prophecy-phpunit": "^2.0",
+                "phpunit/phpunit": "^9.5",
+                "psr/cache": "^2.0||^3.0",
+                "psr/http-client": "^1.0",
+                "psr/http-factory": "^1.0"
+            },
+            "suggest": {
+                "ext-sodium": "Support EdDSA (Ed25519) signatures",
+                "paragonie/sodium_compat": "Support EdDSA (Ed25519) signatures when libsodium is not present",
+                "phpseclib/phpseclib": "Support PS256 (RSASSA-PSS) signatures"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Firebase\\JWT\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Neuman Vong",
+                    "email": "neuman+pear@twilio.com",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Anant Narayanan",
+                    "email": "anant@php.net",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A simple library to encode and decode JSON Web Tokens (JWT) in PHP. Should conform to the current spec.",
+            "homepage": "https://github.com/googleapis/php-jwt",
+            "keywords": [
+                "jwt",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/googleapis/php-jwt/issues",
+                "source": "https://github.com/googleapis/php-jwt/tree/v7.1.0"
+            },
+            "time": "2026-06-11T17:54:14+00:00"
         },
         {
             "name": "fruitcake/php-cors",
@@ -8391,6 +8457,87 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "albertoarena/laravel-truss",
+            "version": "v1.11.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/albertoarena/laravel-truss.git",
+                "reference": "3cb9acb05f4a6c38f95c9122dd0082723017cb45"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/albertoarena/laravel-truss/zipball/3cb9acb05f4a6c38f95c9122dd0082723017cb45",
+                "reference": "3cb9acb05f4a6c38f95c9122dd0082723017cb45",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^12.0 || ^13.0",
+                "illuminate/support": "^12.0 || ^13.0",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.16"
+            },
+            "require-dev": {
+                "laravel/mcp": "^0.9",
+                "laravel/pint": "^1.18",
+                "orchestra/testbench": "^10.0 || ^11.0",
+                "pestphp/pest": "^3.5"
+            },
+            "suggest": {
+                "laravel/mcp": "Enables the optional read-only, structure-only Truss MCP server (Truss as AI context). Opt in with `composer require laravel/mcp`. Needs Laravel >= 12.41.1 or 13."
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "AlbertoArena\\Truss\\TrussServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "AlbertoArena\\Truss\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alberto Arena",
+                    "email": "arena.alberto@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A live database structure viewer for Laravel. Renders your schema (never data) as a scrollable, zoomable ER diagram.",
+            "homepage": "https://trussphp.com",
+            "keywords": [
+                "DBML",
+                "data-dictionary",
+                "database",
+                "database-diagram",
+                "er-diagram",
+                "erd",
+                "introspection",
+                "laravel",
+                "mermaid",
+                "migrations",
+                "schema"
+            ],
+            "support": {
+                "docs": "https://trussphp.com",
+                "issues": "https://github.com/albertoarena/laravel-truss/issues",
+                "source": "https://github.com/albertoarena/laravel-truss"
+            },
+            "funding": [
+                {
+                    "url": "https://ko-fi.com/albertoarena",
+                    "type": "ko-fi"
+                }
+            ],
+            "time": "2026-09-02T16:44:55+00:00"
+        },
         {
             "name": "fakerphp/faker",
             "version": "v1.24.1",

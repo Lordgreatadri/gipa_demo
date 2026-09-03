@@ -2,10 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\InvestorDocumentType;
-use App\Models\InvestorOnboardingCase;
-use App\Models\InvestorProfile;
-use App\Models\User;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,13 +13,21 @@ class InvestorDocument extends Model implements HasMedia
     use GeneratesUuid, InteractsWithMedia;
 
     public const COLLECTION_FILE = 'kyc_file';
+
     public const STATUS_QUARANTINED = 'quarantined';
+
     public const STATUS_ACCEPTED = 'accepted';
+
     public const STATUS_REJECTED = 'rejected';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const SCAN_PENDING = 'pending';
+
     public const SCAN_CLEAN = 'clean';
+
     public const SCAN_INFECTED = 'infected';
+
     public const SCAN_FAILED = 'failed';
 
     protected $attributes = [

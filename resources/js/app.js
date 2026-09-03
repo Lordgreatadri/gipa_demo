@@ -1,4 +1,6 @@
 import Chart from 'chart.js/auto';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import {
 	Activity, BadgeCheck, Bell, BriefcaseBusiness, CalendarClock, CalendarX, ChartNoAxesCombined,
 	ChevronDown, CircleDollarSign, ClockAlert, createIcons, Eye, EyeOff, Files, Gauge, Landmark,
@@ -16,6 +18,57 @@ createIcons({
 });
 
 const chartPalette = ['#087a50', '#e0aa16', '#2474a6', '#d4543f', '#5d6b66', '#7b5aa6', '#2b9b8b', '#b86a26'];
+
+const mapElement = document.querySelector('#investment-map');
+const mapPointsElement = document.querySelector('[data-map-points]');
+
+if (mapElement && mapPointsElement) {
+	const map = L.map(mapElement, { scrollWheelZoom: false, minZoom: 6, maxBounds: [[3.8, -4.2], [12.1, 2.1]] }).setView([7.95, -1.02], 7);
+	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 18,
+		attribution: '&copy; OpenStreetMap contributors',
+	}).addTo(map);
+
+	fetch(mapElement.dataset.boundaryUrl)
+		.then((response) => response.ok ? response.json() : Promise.reject(new Error('Boundary unavailable')))
+		.then((boundary) => L.geoJSON(boundary, { style: { color: '#087a50', weight: 2, fillColor: '#d9ede4', fillOpacity: 0.16 } }).addTo(map))
+		.catch(() => {});
+
+	JSON.parse(mapPointsElement.textContent).forEach((point) => {
+		const popup = document.createElement('div');
+		const category = document.createElement('small');
+		const title = document.createElement('strong');
+		const link = document.createElement('a');
+		category.textContent = `${point.sector} / ${point.district}`;
+		title.textContent = point.title;
+		link.textContent = 'View opportunity';
+		link.href = point.url;
+		popup.className = 'map-popup';
+		popup.append(category, title, link);
+		L.circleMarker([point.latitude, point.longitude], { radius: 7, color: '#fff', weight: 2, fillColor: '#c8940d', fillOpacity: 1 })
+			.bindPopup(popup)
+			.addTo(map);
+	});
+
+	document.querySelector('[data-find-location]')?.addEventListener('click', (event) => {
+		const button = event.currentTarget;
+		if (!navigator.geolocation) {
+			button.textContent = 'Location unavailable';
+			return;
+		}
+		button.disabled = true;
+		navigator.geolocation.getCurrentPosition(({ coords }) => {
+			const location = [coords.latitude, coords.longitude];
+			L.circleMarker(location, { radius: 8, color: '#075b3b', fillColor: '#fff', fillOpacity: 1, weight: 3 }).bindPopup('Your approximate location').addTo(map);
+			map.flyTo(location, 10);
+			button.textContent = 'Location found';
+			button.disabled = false;
+		}, () => {
+			button.textContent = 'Location not available';
+			button.disabled = false;
+		}, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 });
+	});
+}
 
 document.querySelectorAll('[data-chart-panel]').forEach((panel) => {
 	const canvas = panel.querySelector('[data-dashboard-chart]');
