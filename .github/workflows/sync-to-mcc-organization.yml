@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Sync branch to organization
+      - name: Sync branch to mcc organization
         env:
           ORG_TOKEN: ${{ secrets.MCC_ORG_GIPA_REPO_TOKEN }}
         run: |
@@ -27,4 +27,3 @@ jobs:
             "refs/heads/${GITHUB_REF_NAME}:refs/heads/${GITHUB_REF_NAME}" \
             --force
 
-            
