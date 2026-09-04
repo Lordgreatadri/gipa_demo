@@ -54,21 +54,35 @@ class SecurityHeaders
      * Build the Content-Security-Policy. Scripts are locked to first-party code
      * and the request nonce; styles keep 'unsafe-inline' because Leaflet and
      * Chart.js set element styles at runtime. Map tiles and the self-hosted
-     * font service are the only third-party origins permitted.
+     * font service are the only third-party origins permitted. In local
+     * development the Vite dev server (HMR websocket + module/style fetches) is
+     * additionally allowed so hot-reloading is not blocked.
      */
     private function contentSecurityPolicy(string $nonce): string
     {
+        $scriptSrc = "'self' 'nonce-{$nonce}'";
+        $styleSrc = "'self' 'unsafe-inline' https://fonts.bunny.net";
+        $connectSrc = "'self'";
+
+        if (app()->environment('local')) {
+            $viteHttp = 'http://localhost:5173 http://127.0.0.1:5173';
+            $viteWs = 'ws://localhost:5173 ws://127.0.0.1:5173';
+            $scriptSrc .= ' '.$viteHttp;
+            $styleSrc .= ' '.$viteHttp;
+            $connectSrc .= ' '.$viteHttp.' '.$viteWs;
+        }
+
         return implode('; ', [
             "default-src 'self'",
             "base-uri 'self'",
             "object-src 'none'",
             "frame-ancestors 'self'",
             "form-action 'self'",
-            "script-src 'self' 'nonce-{$nonce}'",
-            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
+            "script-src {$scriptSrc}",
+            "style-src {$styleSrc}",
             "font-src 'self' https://fonts.bunny.net",
             "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
-            "connect-src 'self'",
+            "connect-src {$connectSrc}",
             "manifest-src 'self'",
             "worker-src 'self'",
         ]);

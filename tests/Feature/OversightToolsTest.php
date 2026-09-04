@@ -106,4 +106,18 @@ class OversightToolsTest extends TestCase
             ->get(route('staff.audit-logs.export', ['format' => 'xml']))
             ->assertNotFound();
     }
+
+    public function test_csv_export_neutralises_spreadsheet_formula_injection(): void
+    {
+        $exporter = $this->auditor();
+        $exporter->givePermissionTo(AuditPermissions::LOGS_EXPORT);
+
+        $this->actingAs($exporter);
+        activity('workflow')->event('publish')->log('=HYPERLINK("http://evil.example","click")');
+
+        $content = $this->get(route('staff.audit-logs.export', ['format' => 'csv']))->streamedContent();
+
+        // The dangerous leading '=' must be prefixed so spreadsheets treat it as text.
+        $this->assertStringContainsString("'=HYPERLINK", $content);
+    }
 }

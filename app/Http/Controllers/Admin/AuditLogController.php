@@ -127,16 +127,16 @@ class AuditLogController extends Controller
 
             $written = 0;
             foreach ($query->lazy() as $activity) {
-                fputcsv($handle, [
+                fputcsv($handle, array_map($this->csvSafe(...), [
                     $activity->created_at instanceof Carbon ? $activity->created_at->toIso8601String() : (string) $activity->created_at,
                     $activity->causer?->name ?? 'System',
                     $activity->log_name,
                     $activity->event,
                     $activity->description,
                     $activity->subject_type ? class_basename($activity->subject_type) : '',
-                    $activity->subject_id,
+                    (string) $activity->subject_id,
                     $activity->properties->isNotEmpty() ? $activity->properties->toJson() : '',
-                ]);
+                ]));
 
                 if (++$written >= self::EXPORT_LIMIT) {
                     break;
@@ -145,7 +145,22 @@ class AuditLogController extends Controller
 
             fclose($handle);
         }, $filename, [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Neutralise spreadsheet formula injection by prefixing values that begin
+     * with a formula trigger character so they are treated as literal text.
+     */
+    private function csvSafe(?string $value): string
+    {
+        $value = (string) $value;
+
+        if ($value !== '' && in_array($value[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
+            return "'".$value;
+        }
+
+        return $value;
     }
 }

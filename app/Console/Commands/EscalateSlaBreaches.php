@@ -36,7 +36,7 @@ class EscalateSlaBreaches extends Command
                     ->whereNull('sla_escalated_at')
                     ->orWhereColumn('sla_due_at', '>', 'sla_escalated_at'))
                 ->with('reviewer')
-                ->get(),
+                ->lazyById(),
             'opportunity approval',
             fn (Opportunity $item) => $item->reviewer,
             fn (Opportunity $item) => $item->title,
@@ -54,7 +54,7 @@ class EscalateSlaBreaches extends Command
                     ->whereNull('sla_escalated_at')
                     ->orWhereColumn('sla_due_at', '>', 'sla_escalated_at'))
                 ->with('reviewer')
-                ->get(),
+                ->lazyById(),
             'district publication',
             fn (District $item) => $item->reviewer,
             fn (District $item) => $item->name,
@@ -72,7 +72,7 @@ class EscalateSlaBreaches extends Command
                     ->whereNull('sla_escalated_at')
                     ->orWhereColumn('sla_due_at', '>', 'sla_escalated_at'))
                 ->with('assignee')
-                ->get(),
+                ->lazyById(),
             'investor onboarding',
             fn (InvestorOnboardingCase $item) => $item->assignee,
             fn (InvestorOnboardingCase $item) => $item->reference,

@@ -26,8 +26,9 @@ class SecurityHeadersTest extends TestCase
     {
         $this->get(route('home'))->assertHeaderMissing('Strict-Transport-Security');
 
-        $httpsUrl = str_replace('http://', 'https://', route('home'));
-        $this->get($httpsUrl)->assertHeader('Strict-Transport-Security');
+        $this->withServerVariables(['HTTPS' => 'on', 'SERVER_PORT' => 443])
+            ->get(secure_url('/'))
+            ->assertHeader('Strict-Transport-Security');
     }
 
     public function test_a_strict_content_security_policy_with_a_script_nonce_is_present(): void
