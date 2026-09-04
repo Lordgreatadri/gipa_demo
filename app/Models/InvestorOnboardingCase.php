@@ -44,6 +44,7 @@ class InvestorOnboardingCase extends Model
         'review_started_at',
         'decided_at',
         'sla_due_at',
+        'sla_escalated_at',
         'decision_reason',
         'created_by',
         'updated_by',
@@ -57,6 +58,7 @@ class InvestorOnboardingCase extends Model
             'review_started_at' => 'datetime',
             'decided_at' => 'datetime',
             'sla_due_at' => 'datetime',
+            'sla_escalated_at' => 'datetime',
         ];
     }
 

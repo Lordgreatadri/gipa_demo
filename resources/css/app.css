@@ -388,6 +388,7 @@ svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: 
 .admin-alert { display: flex; gap: .65rem; align-items: center; margin-bottom: 1.25rem; padding: .75rem 1rem; background: var(--green-100); border-left: 3px solid var(--green-700); color: #075035; font-size: .75rem; }
 .admin-alert--error { align-items: start; flex-direction: column; background: #fbe9e5; border-color: #b54935; color: #7d2c20; }
 .admin-page-heading { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-bottom: 2rem; }
+.admin-page-heading__actions { display: flex; flex-wrap: wrap; gap: .6rem; }
 .admin-page-heading h1, .review-heading h1 { margin: .1rem 0; font-family: 'Manrope', sans-serif; font-size: clamp(1.8rem, 3vw, 2.65rem); line-height: 1.2; }
 .admin-page-heading p:not(.admin-kicker), .review-heading p { margin: .4rem 0 0; color: var(--muted); font-size: .8rem; }
 .admin-kicker { margin: 0; color: var(--green-700); font-size: .63rem; font-weight: 800; text-transform: uppercase; }
@@ -447,11 +448,18 @@ svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: 
 .admin-status--suspended, .admin-status--suspicious { background: #fff1bf; color: #795b00; }
 .admin-status--revoked, .admin-status--invalid { background: #f6ded9; color: #8b3426; }
 .admin-status--valid { background: #d8eee3; color: #11613e; }
-.admin-filterbar { min-height: 62px; display: flex; align-items: end; gap: 1rem; margin-bottom: 1rem; padding: .7rem 1rem; background: var(--surface); border: 1px solid var(--line); }
+.admin-filterbar { min-height: 62px; display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin-bottom: 1rem; padding: .7rem 1rem; background: var(--surface); border: 1px solid var(--line); }
 .admin-filterbar label { display: grid; gap: .2rem; }
 .admin-filterbar label span { color: var(--muted); font-size: .58rem; font-weight: 700; text-transform: uppercase; }
 .admin-filterbar select { min-height: 34px; min-width: 190px; padding: .3rem .55rem; border: 1px solid var(--line); background: var(--page); color: var(--ink); }
+.admin-filterbar input { min-height: 34px; padding: .3rem .55rem; border: 1px solid var(--line); background: var(--page); color: var(--ink); }
+.admin-filterbar button { margin-bottom: .05rem; }
 .admin-filterbar > a { margin-bottom: .4rem; color: var(--green-700); font-size: .68rem; font-weight: 700; }
+.audit-properties { margin-top: .35rem; }
+.audit-properties summary { cursor: pointer; color: var(--green-700); font-weight: 700; font-size: .66rem; }
+.audit-properties dl { margin: .4rem 0 0; display: grid; gap: .3rem; }
+.audit-properties dt { color: var(--muted); font-size: .56rem; text-transform: uppercase; font-weight: 700; }
+.audit-properties dd { margin: 0; white-space: pre-wrap; font-size: .68rem; color: var(--ink); }
 .admin-pagination { margin-top: 1.25rem; }
 .admin-pagination nav > div:first-child { display: none; }
 .admin-pagination nav > div:last-child { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--muted); font-size: .7rem; }

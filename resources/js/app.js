@@ -3,7 +3,7 @@ import L from 'leaflet';
 import {
 	Activity, BadgeCheck, Bell, Bot, BriefcaseBusiness, CalendarClock, CalendarX, ChartNoAxesCombined,
 	ChevronDown, CircleDollarSign, ClockAlert, createIcons, Eye, EyeOff, Files, Gauge, Landmark,
-	Layers3, LayoutDashboard, MapPinned, Route, Search, ShieldAlert, TriangleAlert, UsersRound,
+	Layers3, LayoutDashboard, MapPinned, Route, Search, ShieldAlert, ShieldCheck, TriangleAlert, UsersRound,
 } from 'lucide';
 
 import './assistant';
@@ -15,7 +15,7 @@ createIcons({
 	icons: {
 		Activity, BadgeCheck, Bell, Bot, BriefcaseBusiness, CalendarClock, CalendarX, ChartNoAxesCombined,
 		ChevronDown, CircleDollarSign, ClockAlert, Eye, EyeOff, Files, Gauge, Landmark,
-		Layers3, LayoutDashboard, MapPinned, Route, Search, ShieldAlert, TriangleAlert, UsersRound,
+		Layers3, LayoutDashboard, MapPinned, Route, Search, ShieldAlert, ShieldCheck, TriangleAlert, UsersRound,
 	},
 });
 
@@ -267,4 +267,16 @@ document.querySelectorAll('[data-password-toggle]').forEach((button) => {
 		button.querySelector('[data-password-show]').hidden = !isVisible;
 		button.querySelector('[data-password-hide]').hidden = isVisible;
 	});
+});
+
+// CSP-safe replacements for former inline handlers. Auto-submit a filter form
+// when its control changes, and confirm destructive form submissions.
+document.addEventListener('change', (event) => {
+	const control = event.target.closest('[data-auto-submit]');
+	if (control) control.form?.requestSubmit();
+});
+
+document.addEventListener('submit', (event) => {
+	const form = event.target.closest('form[data-confirm]');
+	if (form && !window.confirm(form.dataset.confirm)) event.preventDefault();
 });

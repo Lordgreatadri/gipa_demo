@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Support\AssistantPermissions;
+use App\Support\AuditPermissions;
 use App\Support\CertificatePermissions;
 use App\Support\InvestorPermissions;
 use App\Support\WorkflowPermissions;
@@ -17,11 +18,11 @@ class WorkflowPermissionSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach ([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL, ...CertificatePermissions::ALL, ...AssistantPermissions::ALL] as $permission) {
+        foreach ([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL, ...CertificatePermissions::ALL, ...AssistantPermissions::ALL, ...AuditPermissions::ALL] as $permission) {
             Permission::findOrCreate($permission, 'web');
         }
 
-        Role::findOrCreate('Super Administrator', 'web')->syncPermissions([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL, ...CertificatePermissions::ALL, ...AssistantPermissions::ALL]);
+        Role::findOrCreate('Super Administrator', 'web')->syncPermissions([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL, ...CertificatePermissions::ALL, ...AssistantPermissions::ALL, ...AuditPermissions::ALL]);
         Role::findOrCreate('Content / Data Manager', 'web')->syncPermissions([
             WorkflowPermissions::DISTRICT_SUBMIT,
             WorkflowPermissions::OPPORTUNITY_SUBMIT,
@@ -56,6 +57,9 @@ class WorkflowPermissionSeeder extends Seeder
             CertificatePermissions::REVOKE,
             CertificatePermissions::EVIDENCE_VIEW,
             CertificatePermissions::AUDIT_VIEW,
+            AuditPermissions::LOGS_VIEW,
+            AuditPermissions::LOGS_EXPORT,
+            AuditPermissions::SLA_VIEW,
         ]);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

@@ -39,6 +39,7 @@ class District extends Model
         'workflow_status',
         'reviewer_id',
         'sla_due_at',
+        'sla_escalated_at',
         'review_reason',
         'published_at',
         'created_by',
@@ -55,6 +56,7 @@ class District extends Model
             'infrastructure_quality_score' => 'decimal:2',
             'economic_data' => 'array',
             'sla_due_at' => 'datetime',
+            'sla_escalated_at' => 'datetime',
             'published_at' => 'datetime',
             'version' => 'integer',
         ];
