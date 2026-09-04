@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#075b3b">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="description" content="{{ $description ?? 'Manage your investment interests and onboarding with GIPA.' }}">
         <title>{{ $title ?? 'Investor workspace' }} | IOMP</title>
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -47,5 +48,6 @@
                 <main class="portal-content" id="portal-content">{{ $slot }}</main>
             </div>
         </div>
+        <x-assistant-widget />
     </body>
 </html>

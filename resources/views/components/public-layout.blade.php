@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#075b3b">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="description" content="{{ $description ?? 'Discover verified investment opportunities across Ghana.' }}">
         <title>{{ $title ?? 'Investment opportunities' }} | IOMP</title>
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -72,5 +73,6 @@
             <div class="shell site-footer__bottom"><span>&copy; {{ date('Y') }} IOMP. Republic of Ghana.</span><div><span>Privacy</span><span>Terms</span><span>Data policy</span></div></div>
         </footer>
         <div class="connection-status" data-connection-status role="status" aria-live="polite" hidden></div>
+        <x-assistant-widget />
     </body>
 </html>

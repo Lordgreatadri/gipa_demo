@@ -107,8 +107,26 @@ These programme components are named in the broader concept material but are not
 - [ ] Explicitly freshness-labelled offline synchronization after device/staleness approval
 - [x] Explainable investor-to-opportunity matchmaking with normalized preferences and bounded candidate ranking
 - [ ] ORC, GIS and payment integrations
-- [ ] AI assistant with governed responses
+- [x] AI assistant with governed, grounded and cited responses
 - [ ] Broader internal automation and operational dashboards
+
+## GIPA Assistant
+
+A retrieval-augmented assistant that answers public and investor questions from a curated knowledge base and live platform data. It runs on a deterministic offline driver by default (no external calls, fully testable) with an optional OpenAI driver.
+
+- [x] Floating chat widget on public pages, the landing page and the investor workspace with an attention-drawing animated launcher and reduced-motion fallback
+- [x] Grounded retrieval-augmented answers with inline source citations from published knowledge documents
+- [x] Deterministic offline driver by default with an optional OpenAI chat/embedding driver selected by `ASSISTANT_DRIVER`
+- [x] Knowledge indexer that chunks, embeds and checksums documents, computing embeddings before opening the write transaction
+- [x] Embedding-model-scoped retrieval so only chunks from the active model are compared
+- [x] Live platform-statistics tool gated to count questions about supported metrics (opportunities, sectors, districts, regions)
+- [x] Certificate-verification tool that returns QR/verification-link guidance and never fabricates a certificate result
+- [x] Session-bound conversation memory with guest resume protected by a session-token match and owner check for authenticated users
+- [x] Guardrails for out-of-scope refusal, prompt-injection deflection, question-length limits and per-session rate limiting
+- [x] Permission-gated staff knowledge base (`assistant.knowledge.view` / `assistant.knowledge.manage`) to create, edit, publish, delete and re-index documents
+- [x] Queued full re-index job with queued/running/completed/failed status surfaced on the knowledge-base screen
+- [x] Scheduled retention pruning command that deletes conversations older than the configured period and cascades their messages
+- [ ] Streaming responses and multi-language answers
 
 ## Verification
 
@@ -118,6 +136,9 @@ These programme components are named in the broader concept material but are not
 - [x] Administrative workflow tests verify permissions, transitions, SLA, audit and notifications
 - [x] Investor onboarding tests verify registration, backfill, KYC gates, private storage, ownership, permissions, audit and decisions
 - [x] Certificate tests verify district scope, immutable signing, tamper detection, key rotation, public privacy, idempotency, artifacts and query bounds
+- [x] Assistant tests verify grounded citations, live tools, refusal without context, prompt-injection deflection, rate limiting, session-bound conversation memory and guest-resume protection
+- [x] Assistant maintenance tests verify retention pruning and queued re-index status
+- [x] Assistant knowledge-management tests verify permission scope, document create/index, update and delete
 - [x] Frontend production assets compile through Vite
 
 ## Data Dependencies

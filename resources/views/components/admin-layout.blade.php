@@ -72,6 +72,14 @@
                             <a href="{{ route('staff.notifications.index') }}" @class(['is-current' => request()->routeIs('staff.notifications.index')])>Notification list</a>
                         </div>
                     </details>
+                    @can('assistant.knowledge.view')
+                        <details class="admin-nav-group" data-nav-group="assistant" @if(request()->routeIs('staff.assistant.*')) open @endif>
+                            <summary><i data-lucide="bot" aria-hidden="true"></i><span>GIPA Assistant</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+                            <div class="admin-nav-group__items">
+                                <a href="{{ route('staff.assistant.knowledge.index') }}" @class(['is-current' => request()->routeIs('staff.assistant.knowledge.index', 'staff.assistant.knowledge.edit', 'staff.assistant.knowledge.create')])>Knowledge base</a>
+                            </div>
+                        </details>
+                    @endcan
                     <details class="admin-nav-group" data-nav-group="guidance" @if(request()->routeIs('staff.guide')) open @endif>
                         <summary><i data-lucide="files" aria-hidden="true"></i><span>Guidance</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
                         <div class="admin-nav-group__items">
