@@ -21,3 +21,6 @@ jobs:
         run: |
           git push --mirror \
             "https://x-access-token:${{ secrets.MCC_ORG_GIPA_REPO_TOKEN }}@github.com/Mobile-Content-Ltd/gipa_demo.git"
+
+
+            
