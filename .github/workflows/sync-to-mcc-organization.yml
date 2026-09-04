@@ -1,26 +1,30 @@
-name: Sync to MCC Organization
+name: Sync Main and UAT to MCC Organization
 
 on:
   push:
     branches:
       - main
+      - uat
 
 jobs:
   sync:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone personal repository as a mirror
-        run: |
-          git clone --mirror \
-            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
-            mirror
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Push mirror to organization repository
-        working-directory: mirror
+      - name: Sync branch to organization
+        env:
+          ORG_TOKEN: ${{ secrets.MCC_ORG_GIPA_REPO_TOKEN }}
         run: |
-          git push --mirror \
-            "https://x-access-token:${{ secrets.MCC_ORG_GIPA_REPO_TOKEN }}@github.com/Mobile-Content-Ltd/gipa_demo.git"
+          git remote add organization \
+            "https://x-access-token:${ORG_TOKEN}@github.com/Mobile-Content-Ltd/gipa_demo.git"
 
+          git push organization \
+            "refs/heads/${GITHUB_REF_NAME}:refs/heads/${GITHUB_REF_NAME}" \
+            --force
 
             
