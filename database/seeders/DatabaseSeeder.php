@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             DefaultSystemUserSeeder::class,
             GhanaDistrictRegistrySeeder::class,
             IompPrototypeSeeder::class,
+            AssistantKnowledgeSeeder::class,
         ]);
 
         if (config('iomp.demo_users.enabled')) {

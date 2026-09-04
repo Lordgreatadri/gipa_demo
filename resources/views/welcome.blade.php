@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#075b3b">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="description" content="Discover verified investment opportunities across Ghana's regions and districts.">
 
         <title>IOMP | Ghana Investment Opportunities</title>
@@ -231,5 +232,7 @@
         </footer>
 
         <div class="connection-status" data-connection-status role="status" aria-live="polite" hidden></div>
+
+        <x-assistant-widget />
     </body>
 </html>

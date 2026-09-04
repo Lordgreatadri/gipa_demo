@@ -1,17 +1,19 @@
 import Chart from 'chart.js/auto';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import {
-	Activity, BadgeCheck, Bell, BriefcaseBusiness, CalendarClock, CalendarX, ChartNoAxesCombined,
+	Activity, BadgeCheck, Bell, Bot, BriefcaseBusiness, CalendarClock, CalendarX, ChartNoAxesCombined,
 	ChevronDown, CircleDollarSign, ClockAlert, createIcons, Eye, EyeOff, Files, Gauge, Landmark,
 	Layers3, LayoutDashboard, MapPinned, Route, Search, ShieldAlert, TriangleAlert, UsersRound,
 } from 'lucide';
 
+import './assistant';
 import './bootstrap';
+
+import 'leaflet/dist/leaflet.css';
 
 createIcons({
 	icons: {
-		Activity, BadgeCheck, Bell, BriefcaseBusiness, CalendarClock, CalendarX, ChartNoAxesCombined,
+		Activity, BadgeCheck, Bell, Bot, BriefcaseBusiness, CalendarClock, CalendarX, ChartNoAxesCombined,
 		ChevronDown, CircleDollarSign, ClockAlert, Eye, EyeOff, Files, Gauge, Landmark,
 		Layers3, LayoutDashboard, MapPinned, Route, Search, ShieldAlert, TriangleAlert, UsersRound,
 	},
