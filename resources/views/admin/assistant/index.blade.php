@@ -30,6 +30,30 @@
         </div>
     @endif
 
+    @if($reindexStatus)
+        @php($reindexState = $reindexStatus['state'] ?? 'unknown')
+        <div class="admin-alert {{ $reindexState === 'failed' ? 'admin-alert--error' : '' }}" role="status">
+            @switch($reindexState)
+                @case('queued')
+                    <strong>Full re-index queued.</strong>
+                    <span>The knowledge base will be rebuilt by a background worker shortly.</span>
+                    @break
+                @case('running')
+                    <strong>Full re-index in progress…</strong>
+                    <span>A background worker is rebuilding the knowledge index. Refresh to see the result.</span>
+                    @break
+                @case('completed')
+                    <strong>Last full re-index completed.</strong>
+                    <span>Rebuilt {{ number_format($reindexStatus['chunks'] ?? 0) }} chunks{{ isset($reindexStatus['finished_at']) ? ' · '.\Illuminate\Support\Carbon::parse($reindexStatus['finished_at'])->diffForHumans() : '' }}.</span>
+                    @break
+                @case('failed')
+                    <strong>The last full re-index failed.</strong>
+                    <span>{{ $reindexStatus['error'] ?? 'An unexpected error occurred.' }} Please retry once the cause is resolved.</span>
+                    @break
+            @endswitch
+        </div>
+    @endif
+
     <section class="reference-section">
         <div class="reference-section__heading">
             <div><h2>Documents</h2><p>Published documents are retrieved and cited when they match a question.</p></div>

@@ -33,6 +33,7 @@ class KnowledgeRetriever
             ->join('assistant_documents', 'assistant_documents.id', '=', 'assistant_document_chunks.assistant_document_id')
             ->where('assistant_documents.is_published', true)
             ->whereNull('assistant_documents.deleted_at')
+            ->where('assistant_document_chunks.embedding_model', $this->embeddings->model())
             ->get([
                 'assistant_document_chunks.content',
                 'assistant_document_chunks.embedding',

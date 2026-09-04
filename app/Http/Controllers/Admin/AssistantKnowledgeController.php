@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ReindexAssistantKnowledge;
 use App\Models\AssistantConversation;
 use App\Models\AssistantDocument;
 use App\Services\Assistant\KnowledgeIndexer;
 use App\Support\AssistantPermissions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -37,6 +39,7 @@ class AssistantKnowledgeController extends Controller
                 'conversations' => AssistantConversation::query()->count(),
             ],
             'canManage' => $request->user()->can(AssistantPermissions::KNOWLEDGE_MANAGE),
+            'reindexStatus' => Cache::get(ReindexAssistantKnowledge::STATUS_CACHE_KEY),
         ]);
     }
 
@@ -120,9 +123,14 @@ class AssistantKnowledgeController extends Controller
     {
         abort_unless($request->user()->can(AssistantPermissions::KNOWLEDGE_MANAGE), 403);
 
-        $chunks = $this->indexer->reindexAll(force: true);
+        Cache::forever(ReindexAssistantKnowledge::STATUS_CACHE_KEY, [
+            'state' => 'queued',
+            'started_at' => now()->toIso8601String(),
+        ]);
 
-        return back()->with('status', "Re-indexed the knowledge base into {$chunks} chunks.");
+        ReindexAssistantKnowledge::dispatch(force: true);
+
+        return back()->with('status', 'A full re-index has been queued. This screen will show progress and any failures.');
     }
 
     /**

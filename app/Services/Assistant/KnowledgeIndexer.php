@@ -21,18 +21,27 @@ class KnowledgeIndexer
     public function index(AssistantDocument $document): int
     {
         $chunks = $this->chunk($document->body);
+        $model = $this->embeddings->model();
 
-        DB::transaction(function () use ($document, $chunks): void {
+        // Generate every embedding before opening the transaction so slow
+        // provider calls (e.g. OpenAI) do not hold row locks open for the
+        // duration of the network round-trips.
+        $rows = [];
+        foreach ($chunks as $ordinal => $content) {
+            $rows[] = [
+                'ordinal' => $ordinal,
+                'content' => $content,
+                'token_estimate' => Text::estimateTokens($content),
+                'embedding' => $this->embeddings->embed($document->title.' '.$content),
+                'embedding_model' => $model,
+            ];
+        }
+
+        DB::transaction(function () use ($document, $rows): void {
             $document->chunks()->delete();
 
-            foreach ($chunks as $ordinal => $content) {
-                $document->chunks()->create([
-                    'ordinal' => $ordinal,
-                    'content' => $content,
-                    'token_estimate' => Text::estimateTokens($content),
-                    'embedding' => $this->embeddings->embed($document->title.' '.$content),
-                    'embedding_model' => $this->embeddings->model(),
-                ]);
+            foreach ($rows as $row) {
+                $document->chunks()->create($row);
             }
 
             $document->forceFill([
@@ -41,7 +50,7 @@ class KnowledgeIndexer
             ])->save();
         });
 
-        return count($chunks);
+        return count($rows);
     }
 
     /**

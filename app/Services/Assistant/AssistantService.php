@@ -47,13 +47,15 @@ class AssistantService
 
         $conversation = $this->resolveConversation($conversation, $user, $meta);
 
+        // Capture prior turns before persisting the current question so it is
+        // not sent twice when a provider appends the question to the history.
+        $history = $this->history($conversation);
+
         $conversation->messages()->create([
             'role' => AssistantMessage::ROLE_USER,
             'content' => $clean,
             'flagged' => $flagged,
         ]);
-
-        $history = $this->history($conversation);
 
         $toolResults = $this->runTools($clean);
         $chunks = $this->retriever->retrieve($clean);

@@ -6,6 +6,7 @@ use App\Models\AssistantConversation;
 use App\Models\AssistantDocument;
 use App\Models\AssistantMessage;
 use App\Models\Sector;
+use App\Models\User;
 use App\Services\Assistant\KnowledgeIndexer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -77,16 +78,43 @@ class AssistantChatTest extends TestCase
     {
         Sector::create(['code' => 'AGR', 'name' => 'Agriculture']);
 
-        $first = $this->postJson(route('assistant.chat'), ['message' => 'What sectors are available?']);
+        // Authenticated turns resume by owner, exercising conversation memory
+        // without depending on session-cookie persistence between test requests.
+        $investor = User::factory()->create();
+
+        $first = $this->actingAs($investor)
+            ->postJson(route('assistant.chat'), ['message' => 'What sectors are available?']);
         $conversation = $first->json('conversation');
 
-        $this->postJson(route('assistant.chat'), [
+        $this->actingAs($investor)->postJson(route('assistant.chat'), [
             'message' => 'And how do I register as an investor?',
             'conversation' => $conversation,
         ])->assertOk()->assertJsonPath('conversation', $conversation);
 
         $this->assertSame(1, AssistantConversation::query()->count());
         $this->assertSame(4, AssistantMessage::query()->count());
+    }
+
+    public function test_guest_conversation_cannot_be_resumed_from_a_different_session(): void
+    {
+        Sector::create(['code' => 'AGR', 'name' => 'Agriculture']);
+
+        // A pre-existing guest conversation bound to a different browser session.
+        $foreign = AssistantConversation::create([
+            'session_token' => hash('sha256', 'someone-elses-session'),
+            'channel' => 'public',
+            'last_activity_at' => now(),
+        ]);
+
+        // Supplying only the leaked UUID from a different session must not grant
+        // access; a brand-new conversation is started instead of resuming.
+        $this->postJson(route('assistant.chat'), [
+            'message' => 'Show me the previous answer again.',
+            'conversation' => $foreign->uuid,
+        ])->assertOk();
+
+        $this->assertSame(2, AssistantConversation::query()->count());
+        $this->assertSame(0, $foreign->messages()->count());
     }
 
     public function test_prompt_injection_is_flagged_and_deflected(): void

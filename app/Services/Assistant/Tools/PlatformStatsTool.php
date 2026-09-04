@@ -18,9 +18,34 @@ class PlatformStatsTool extends AbstractTool
         return 'platform_stats';
     }
 
+    /** @var array<int, string> Platform metrics this tool can actually report. */
+    private const METRICS = ['opportunit', 'sector', 'district', 'region'];
+
     protected function triggers(): array
     {
         return ['how many', 'number of', 'statistics', 'stats', 'total', 'count of', 'overview of'];
+    }
+
+    public function matches(string $question): bool
+    {
+        // Only activate when the question expresses a counting/statistics intent
+        // AND references a metric this tool can answer, so unrelated questions
+        // like "how many employees does GIPA have?" are not answered with
+        // platform counts (which would otherwise be reported as grounded).
+        return parent::matches($question) && $this->mentionsMetric($question);
+    }
+
+    private function mentionsMetric(string $question): bool
+    {
+        $question = strtolower($question);
+
+        foreach (self::METRICS as $metric) {
+            if (str_contains($question, $metric)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function handle(string $question): ?ToolResult

@@ -61,10 +61,14 @@ class AssistantController extends Controller
             return $conversation->user_id === $request->user()?->id ? $conversation : null;
         }
 
-        // Guest conversations are resumed via their unguessable UUID, which is
-        // only ever returned to the originating browser. A signed-in user does
-        // not adopt an anonymous conversation.
-        return $request->user() === null ? $conversation : null;
+        // Guest conversations must originate from the same browser session. The
+        // persisted session token is required in addition to the UUID so a
+        // leaked conversation id alone cannot be used to append to, or read the
+        // prior turns of, another visitor's conversation.
+        return $request->user() === null
+            && hash_equals((string) $conversation->session_token, $this->sessionToken($request))
+                ? $conversation
+                : null;
     }
 
     private function sessionToken(AssistantChatRequest $request): string

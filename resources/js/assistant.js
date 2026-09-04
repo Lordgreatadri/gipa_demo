@@ -28,6 +28,10 @@ function initAssistant() {
 		toggles.forEach((btn) => btn.setAttribute('aria-expanded', String(open)));
 		if (open) {
 			window.setTimeout(() => input.focus(), 50);
+		} else if (panel.contains(document.activeElement)) {
+			// Move focus out of the now-hidden subtree back to the launcher so
+			// keyboard focus is never lost (e.g. when closing with Escape).
+			root.querySelector('.assistant-launcher')?.focus();
 		}
 	}
 
