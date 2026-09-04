@@ -37,7 +37,7 @@
                         <label class="consent-field"><input type="checkbox" name="is_active" value="1" @checked($sector->is_active)><span>Available for selection</span></label>
                         <div class="reference-edit__actions"><button class="button button--outline" type="submit">Save</button></div>
                     </form>
-                    <form class="reference-delete" method="post" action="{{ route('staff.reference-data.destroy', ['sector', $sector->uuid]) }}" onsubmit="return confirm('Delete this unused sector?')">@csrf @method('DELETE')<button type="submit">Delete unused sector</button></form>
+                    <form class="reference-delete" method="post" action="{{ route('staff.reference-data.destroy', ['sector', $sector->uuid]) }}" data-confirm="Delete this unused sector?">@csrf @method('DELETE')<button type="submit">Delete unused sector</button></form>
                 </details>
             @endforeach
         </div>
@@ -70,7 +70,7 @@
                         <label class="consent-field"><input type="checkbox" name="is_active" value="1" @checked($subSector->is_active)><span>Available for selection</span></label>
                         <div class="reference-edit__actions"><button class="button button--outline" type="submit">Save</button></div>
                     </form>
-                    <form class="reference-delete" method="post" action="{{ route('staff.reference-data.destroy', ['sub-sector', $subSector->uuid]) }}" onsubmit="return confirm('Delete this unused sub-sector?')">@csrf @method('DELETE')<button type="submit">Delete unused sub-sector</button></form>
+                    <form class="reference-delete" method="post" action="{{ route('staff.reference-data.destroy', ['sub-sector', $subSector->uuid]) }}" data-confirm="Delete this unused sub-sector?">@csrf @method('DELETE')<button type="submit">Delete unused sub-sector</button></form>
                 </details>
             @endforeach
         </div>
@@ -100,7 +100,7 @@
                         <label class="consent-field"><input type="checkbox" name="is_active" value="1" @checked($type->is_active)><span>Available for selection</span></label>
                         <div class="reference-edit__actions"><button class="button button--outline" type="submit">Save</button></div>
                     </form>
-                    <form class="reference-delete" method="post" action="{{ route('staff.reference-data.destroy', ['enterprise-type', $type->uuid]) }}" onsubmit="return confirm('Delete this unused enterprise type?')">@csrf @method('DELETE')<button type="submit">Delete unused enterprise type</button></form>
+                    <form class="reference-delete" method="post" action="{{ route('staff.reference-data.destroy', ['enterprise-type', $type->uuid]) }}" data-confirm="Delete this unused enterprise type?">@csrf @method('DELETE')<button type="submit">Delete unused enterprise type</button></form>
                 </details>
             @endforeach
         </div>

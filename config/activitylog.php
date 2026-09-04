@@ -11,9 +11,10 @@ return [
 
     /*
      * When the clean-command is executed, all recording activities older than
-     * the number of days specified here will be deleted.
+     * the number of days specified here will be deleted. Configurable so the
+     * compliance retention window can be tuned per environment.
      */
-    'delete_records_older_than_days' => 365,
+    'delete_records_older_than_days' => (int) env('ACTIVITY_LOGGER_DELETE_OLDER_THAN_DAYS', 365),
 
     /*
      * If no log name is passed to the activity() helper

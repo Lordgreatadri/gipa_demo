@@ -55,7 +55,7 @@ Status reflects verified repository behavior. A checked item is implemented and 
 - [x] Permission-controlled opportunity draft create, edit and soft delete
 - [x] Staff management for sectors, sub-sectors and enterprise types
 - [x] Deterministic 150+ opportunity demonstration dataset
-- [ ] Scheduled SLA breach scanner and escalation notification
+- [x] Scheduled SLA breach scanner and escalation notification
 - [ ] Notification-template management
 
 ## Investor Inquiries
@@ -70,7 +70,10 @@ Status reflects verified repository behavior. A checked item is implemented and 
 - [x] Staff dashboard with core workflow, district, inquiry and SLA indicators
 - [x] Spatie activity-log persistence for workflow actions
 - [x] Database queue and notification storage
-- [ ] Audit log viewer, retention controls and export
+- [x] Permission-gated audit log viewer with log, event, subject, actor and date filters
+- [x] SLA monitoring dashboard with breach and at-risk alerts and per-queue timeline tracking
+- [x] Baseline security-headers middleware on all web responses (clickjacking, MIME-sniffing, referrer, HSTS on TLS)
+- [x] Audit log CSV/PDF export and configurable, scheduler-enforced retention window
 - [ ] Reports dashboard and exports
 - [ ] Central system, workflow and notification settings UI
 - [ ] Maintenance control UI, administrator exception and IP whitelist
@@ -128,6 +131,22 @@ A retrieval-augmented assistant that answers public and investor questions from 
 - [x] Scheduled retention pruning command that deletes conversations older than the configured period and cascades their messages
 - [ ] Streaming responses and multi-language answers
 
+## Oversight And Security
+
+Elevated-staff tooling for compliance traceability and service-level governance, plus a security-hardening pass informed by an OWASP Top 10 review.
+
+- [x] Audit log viewer over Spatie activity records with filters for log, event, subject, actor and date range, and expandable before/after property detail
+- [x] SLA monitoring dashboard aggregating breached, at-risk and on-track counts across opportunity, district and onboarding queues with per-record deadline timelines
+- [x] New `audit.logs.view` and `sla.monitor.view` permissions granted to Super Administrator and Reviewer / Approver
+- [x] Permission-gated routes and navigation group revealed only to authorised staff
+- [x] Baseline security-headers middleware (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Cross-Origin-Opener-Policy`, `Permissions-Policy`, conditional `Strict-Transport-Security`)
+- [x] Strict Content-Security-Policy with a fresh per-request nonce; former inline event handlers externalised to first-party scripts so `script-src` runs without `unsafe-inline`
+- [x] Audit-log CSV and PDF export (filter-aware, `audit.logs.export` gated) and a configurable retention window enforced by a daily `activitylog:clean` schedule
+- [x] Hourly `sla:escalate` command that emails assigned reviewers on breach and records `sla_escalated_at` to prevent duplicate alerts
+- [x] Verified safe posture: Eloquent-only queries (no raw SQL), explicit `$fillable` on all models, whitelisted file-upload MIME/size with private disk and SHA-256 integrity, escaped Blade output, environment-only secrets
+- [x] Documented production `.env` hardening (`SESSION_SECURE_COOKIE`, `SESSION_ENCRYPT`, `SESSION_SAME_SITE`)
+- [ ] Automated dependency and static-analysis scanning in CI
+
 ## Verification
 
 - [x] District registry test verifies 16 regions and 261 unique districts
@@ -139,6 +158,10 @@ A retrieval-augmented assistant that answers public and investor questions from 
 - [x] Assistant tests verify grounded citations, live tools, refusal without context, prompt-injection deflection, rate limiting, session-bound conversation memory and guest-resume protection
 - [x] Assistant maintenance tests verify retention pruning and queued re-index status
 - [x] Assistant knowledge-management tests verify permission scope, document create/index, update and delete
+- [x] Oversight tests verify audit-log permission gating, filtering and SLA dashboard access
+- [x] Audit-export tests verify export permission gating, CSV streaming and format validation
+- [x] SLA escalation tests verify one-time breach notification to the assigned reviewer and in-window suppression
+- [x] Security-headers tests verify baseline hardening headers, TLS-only HSTS and a nonce-based Content-Security-Policy
 - [x] Frontend production assets compile through Vite
 
 ## Data Dependencies

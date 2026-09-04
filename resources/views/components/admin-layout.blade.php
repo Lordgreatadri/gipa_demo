@@ -72,6 +72,15 @@
                             <a href="{{ route('staff.notifications.index') }}" @class(['is-current' => request()->routeIs('staff.notifications.index')])>Notification list</a>
                         </div>
                     </details>
+                    @canany(['sla.monitor.view', 'audit.logs.view'])
+                        <details class="admin-nav-group" data-nav-group="oversight" @if(request()->routeIs('staff.sla-monitor.*', 'staff.audit-logs.*')) open @endif>
+                            <summary><i data-lucide="shield-check" aria-hidden="true"></i><span>Oversight</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+                            <div class="admin-nav-group__items">
+                                @can('sla.monitor.view')<a href="{{ route('staff.sla-monitor.index') }}" @class(['is-current' => request()->routeIs('staff.sla-monitor.*')])>SLA monitoring</a>@endcan
+                                @can('audit.logs.view')<a href="{{ route('staff.audit-logs.index') }}" @class(['is-current' => request()->routeIs('staff.audit-logs.*')])>Audit log</a>@endcan
+                            </div>
+                        </details>
+                    @endcanany
                     @can('assistant.knowledge.view')
                         <details class="admin-nav-group" data-nav-group="assistant" @if(request()->routeIs('staff.assistant.*')) open @endif>
                             <summary><i data-lucide="bot" aria-hidden="true"></i><span>GIPA Assistant</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>

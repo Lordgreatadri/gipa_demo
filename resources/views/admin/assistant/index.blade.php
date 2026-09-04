@@ -80,7 +80,7 @@
                                     @csrf
                                     <button class="button button--outline" type="submit">Re-index</button>
                                 </form>
-                                <form method="post" action="{{ route('staff.assistant.knowledge.destroy', $document) }}" onsubmit="return confirm('Remove this document from the knowledge base?')">
+                                <form method="post" action="{{ route('staff.assistant.knowledge.destroy', $document) }}" data-confirm="Remove this document from the knowledge base?">
                                     @csrf @method('DELETE')
                                     <button class="button button--danger" type="submit">Delete</button>
                                 </form>

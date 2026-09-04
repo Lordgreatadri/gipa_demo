@@ -9,3 +9,9 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('assistant:prune-conversations')->daily();
+
+// Enforce the audit-log retention window (config/activitylog.php).
+Schedule::command('activitylog:clean')->dailyAt('01:00');
+
+// Notify assigned reviewers when items breach their SLA deadline.
+Schedule::command('sla:escalate')->hourly();

@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\Admin\AssistantKnowledgeController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CertificateController as AdminCertificateController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DistrictWorkflowController;
 use App\Http\Controllers\Admin\InvestorOnboardingController as AdminInvestorOnboardingController;
 use App\Http\Controllers\Admin\OpportunityReferenceDataController;
 use App\Http\Controllers\Admin\OpportunityWorkflowController;
+use App\Http\Controllers\Admin\SlaMonitorController;
 use App\Http\Controllers\Admin\StaffDistrictAssignmentController;
 use App\Http\Controllers\Admin\WorkspaceDirectoryController;
 use App\Http\Controllers\AssistantController;
@@ -79,6 +81,9 @@ Route::middleware('auth')->group(function () {
 Route::prefix('staff')->name('staff.')->middleware(['auth', 'staff'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::view('/guide', 'staff-guide')->name('guide');
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+    Route::get('/audit-logs/export', [AuditLogController::class, 'export'])->name('audit-logs.export');
+    Route::get('/sla-monitor', [SlaMonitorController::class, 'index'])->name('sla-monitor.index');
     Route::get('/assistant/knowledge', [AssistantKnowledgeController::class, 'index'])->name('assistant.knowledge.index');
     Route::get('/assistant/knowledge/create', [AssistantKnowledgeController::class, 'create'])->name('assistant.knowledge.create');
     Route::post('/assistant/knowledge', [AssistantKnowledgeController::class, 'store'])->name('assistant.knowledge.store');
@@ -86,7 +91,8 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'staff'])->group(fun
     Route::get('/assistant/knowledge/{document}/edit', [AssistantKnowledgeController::class, 'edit'])->name('assistant.knowledge.edit');
     Route::put('/assistant/knowledge/{document}', [AssistantKnowledgeController::class, 'update'])->name('assistant.knowledge.update');
     Route::delete('/assistant/knowledge/{document}', [AssistantKnowledgeController::class, 'destroy'])->name('assistant.knowledge.destroy');
-    Route::post('/assistant/knowledge/{document}/reindex', [AssistantKnowledgeController::class, 'reindex'])->name('assistant.knowledge.reindex');    Route::get('/opportunity-workspace', [WorkspaceDirectoryController::class, 'opportunities'])->name('opportunity-workspace');
+    Route::post('/assistant/knowledge/{document}/reindex', [AssistantKnowledgeController::class, 'reindex'])->name('assistant.knowledge.reindex');
+    Route::get('/opportunity-workspace', [WorkspaceDirectoryController::class, 'opportunities'])->name('opportunity-workspace');
     Route::get('/regions', [WorkspaceDirectoryController::class, 'regions'])->name('regions.index');
     Route::get('/investment-workspace', [WorkspaceDirectoryController::class, 'investments'])->name('investments.overview');
     Route::get('/inquiries', [WorkspaceDirectoryController::class, 'inquiries'])->name('inquiries.index');
