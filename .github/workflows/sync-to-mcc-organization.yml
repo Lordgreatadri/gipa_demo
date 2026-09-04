@@ -1,0 +1,23 @@
+name: Sync to MCC Organization
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone personal repository as a mirror
+        run: |
+          git clone --mirror \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            mirror
+
+      - name: Push mirror to organization repository
+        working-directory: mirror
+        run: |
+          git push --mirror \
+            "https://x-access-token:${{ secrets.MCC_ORG_GIPA_REPO_TOKEN }}@github.com/Mobile-Content-Ltd/gipa_demo.git"
