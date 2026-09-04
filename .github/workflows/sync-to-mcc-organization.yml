@@ -19,11 +19,26 @@ jobs:
       - name: Sync branch to mcc organization
         env:
           ORG_TOKEN: ${{ secrets.MCC_ORG_GIPA_REPO_TOKEN }}
+          TARGET_OWNER: ${{ vars.MCC_ORG_OWNER }}
+          TARGET_REPOSITORY: ${{ vars.MCC_ORG_REPOSITORY }}
         run: |
+          if [ -z "${ORG_TOKEN}" ]; then
+            echo "::notice::Skipping sync because MCC_ORG_GIPA_REPO_TOKEN is not configured."
+            exit 0
+          fi
+
+          if [ -z "${TARGET_OWNER}" ]; then
+            echo "::notice::Skipping sync because MCC_ORG_OWNER is not configured."
+            exit 0
+          fi
+
+          if [ -z "${TARGET_REPOSITORY}" ]; then
+            TARGET_REPOSITORY="${GITHUB_REPOSITORY#*/}"
+          fi
+
           git remote add organization \
-            "https://x-access-token:${ORG_TOKEN}@github.com/Mobile-Content-Ltd/gipa_demo.git"
+            "https://x-access-token:${ORG_TOKEN}@github.com/${TARGET_OWNER}/${TARGET_REPOSITORY}.git"
 
           git push organization \
             "refs/heads/${GITHUB_REF_NAME}:refs/heads/${GITHUB_REF_NAME}" \
             --force
-
