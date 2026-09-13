@@ -40,6 +40,7 @@
                     <a href="#map">Investment map</a>
                     <a href="#districts">Districts</a>
                     <a href="#insights">Insights</a>
+                    <a href="contact">Contact Us</a>
                 </nav>
 
                 <div class="header-actions">
@@ -226,7 +227,7 @@
                 </div>
                 <div class="footer-links"><strong>Explore</strong><a href="#opportunities">Opportunities</a><a href="#map">Investment map</a><a href="#districts">Districts</a></div>
                 <div class="footer-links"><strong>Resources</strong><a href="#insights">Insights</a><a href="{{ route('platform.guide') }}">Investor guide</a><a href="{{ route('api.documentation') }}">API documentation</a></div>
-                <div class="footer-links"><strong>Contact</strong><a href="mailto:info@example.gov.gh">info@example.gov.gh</a><a href="tel:+233000000000">+233 (0) 00 000 0000</a><span>Accra, Ghana</span></div>
+                <div class="footer-links"><strong>Support</strong><a href="{{ route('contact.create') }}">Contact us</a><a href="mailto:info@example.gov.gh">info@example.gov.gh</a><a href="tel:+233000000000">+233 (0) 00 000 0000</a><span>Accra, Ghana</span></div>
             </div>
             <div class="shell site-footer__bottom"><span>&copy; {{ date('Y') }} IOMP. Republic of Ghana.</span><div><span>Privacy</span><span>Terms</span><span>Data policy</span></div></div>
         </footer>

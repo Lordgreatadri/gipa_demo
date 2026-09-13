@@ -127,6 +127,48 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        // Each SMS gateway writes to its own file so a failing integration can be
+        // debugged without sifting through the whole application log.
+        'sms' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/sms/sms.log'),
+            'level' => env('SMS_LOG_LEVEL', 'debug'),
+            'days' => env('SMS_LOG_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
+        'sms-frog' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/sms/frog.log'),
+            'level' => env('SMS_LOG_LEVEL', 'debug'),
+            'days' => env('SMS_LOG_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
+        'sms-twilio' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/sms/twilio.log'),
+            'level' => env('SMS_LOG_LEVEL', 'debug'),
+            'days' => env('SMS_LOG_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
+        'sms-webhooks' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/sms/webhooks.log'),
+            'level' => env('SMS_LOG_LEVEL', 'debug'),
+            'days' => env('SMS_LOG_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
+        'backups' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/backups.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];
