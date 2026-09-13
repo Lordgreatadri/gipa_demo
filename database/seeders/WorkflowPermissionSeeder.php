@@ -4,8 +4,11 @@ namespace Database\Seeders;
 
 use App\Support\AssistantPermissions;
 use App\Support\AuditPermissions;
+use App\Support\BackupPermissions;
 use App\Support\CertificatePermissions;
 use App\Support\InvestorPermissions;
+use App\Support\SmsPermissions;
+use App\Support\SupportPermissions;
 use App\Support\WorkflowPermissions;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
@@ -18,11 +21,22 @@ class WorkflowPermissionSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach ([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL, ...CertificatePermissions::ALL, ...AssistantPermissions::ALL, ...AuditPermissions::ALL] as $permission) {
+        $all = [
+            ...WorkflowPermissions::ALL,
+            ...InvestorPermissions::ALL,
+            ...CertificatePermissions::ALL,
+            ...AssistantPermissions::ALL,
+            ...AuditPermissions::ALL,
+            ...SmsPermissions::ALL,
+            ...SupportPermissions::ALL,
+            ...BackupPermissions::ALL,
+        ];
+
+        foreach ($all as $permission) {
             Permission::findOrCreate($permission, 'web');
         }
 
-        Role::findOrCreate('Super Administrator', 'web')->syncPermissions([...WorkflowPermissions::ALL, ...InvestorPermissions::ALL, ...CertificatePermissions::ALL, ...AssistantPermissions::ALL, ...AuditPermissions::ALL]);
+        Role::findOrCreate('Super Administrator', 'web')->syncPermissions($all);
         Role::findOrCreate('Content / Data Manager', 'web')->syncPermissions([
             WorkflowPermissions::DISTRICT_SUBMIT,
             WorkflowPermissions::OPPORTUNITY_SUBMIT,
@@ -31,6 +45,8 @@ class WorkflowPermissionSeeder extends Seeder
             AssistantPermissions::KNOWLEDGE_VIEW,
             AssistantPermissions::KNOWLEDGE_MANAGE,
             AssistantPermissions::CONVERSATIONS_VIEW,
+            SupportPermissions::CONTACT_VIEW,
+            SupportPermissions::CONTACT_MANAGE,
         ]);
         Role::findOrCreate('District Officer', 'web')->syncPermissions([
             WorkflowPermissions::DISTRICT_SUBMIT,
@@ -60,6 +76,9 @@ class WorkflowPermissionSeeder extends Seeder
             AuditPermissions::LOGS_VIEW,
             AuditPermissions::LOGS_EXPORT,
             AuditPermissions::SLA_VIEW,
+            SupportPermissions::CONTACT_VIEW,
+            SupportPermissions::CONTACT_MANAGE,
+            SmsPermissions::MESSAGES_VIEW,
         ]);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

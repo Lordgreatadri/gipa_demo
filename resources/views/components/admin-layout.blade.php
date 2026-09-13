@@ -72,12 +72,23 @@
                             <a href="{{ route('staff.notifications.index') }}" @class(['is-current' => request()->routeIs('staff.notifications.index')])>Notification list</a>
                         </div>
                     </details>
-                    @canany(['sla.monitor.view', 'audit.logs.view'])
-                        <details class="admin-nav-group" data-nav-group="oversight" @if(request()->routeIs('staff.sla-monitor.*', 'staff.audit-logs.*')) open @endif>
+                    @canany(['support.contact.view', 'sms.config.view', 'sms.messages.view'])
+                        <details class="admin-nav-group" data-nav-group="messaging" @if(request()->routeIs('staff.sms.*', 'staff.contact-messages.*')) open @endif>
+                            <summary><i data-lucide="message-square" aria-hidden="true"></i><span>Messaging &amp; support</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+                            <div class="admin-nav-group__items">
+                                @can('support.contact.view')<a href="{{ route('staff.contact-messages.index') }}" @class(['is-current' => request()->routeIs('staff.contact-messages.*')])>Contact enquiries</a>@endcan
+                                @can('sms.config.view')<a href="{{ route('staff.sms.index') }}" @class(['is-current' => request()->routeIs('staff.sms.index', 'staff.sms.edit')])>SMS configuration</a>@endcan
+                                @can('sms.messages.view')<a href="{{ route('staff.sms.messages') }}" @class(['is-current' => request()->routeIs('staff.sms.messages', 'staff.sms.messages.show')])>SMS delivery log</a>@endcan
+                            </div>
+                        </details>
+                    @endcanany
+                    @canany(['sla.monitor.view', 'audit.logs.view', 'backups.view'])
+                        <details class="admin-nav-group" data-nav-group="oversight" @if(request()->routeIs('staff.sla-monitor.*', 'staff.audit-logs.*', 'staff.backups.*')) open @endif>
                             <summary><i data-lucide="shield-check" aria-hidden="true"></i><span>Oversight</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
                             <div class="admin-nav-group__items">
                                 @can('sla.monitor.view')<a href="{{ route('staff.sla-monitor.index') }}" @class(['is-current' => request()->routeIs('staff.sla-monitor.*')])>SLA monitoring</a>@endcan
                                 @can('audit.logs.view')<a href="{{ route('staff.audit-logs.index') }}" @class(['is-current' => request()->routeIs('staff.audit-logs.*')])>Audit log</a>@endcan
+                                @can('backups.view')<a href="{{ route('staff.backups.index') }}" @class(['is-current' => request()->routeIs('staff.backups.*')])>Backups</a>@endcan
                             </div>
                         </details>
                     @endcanany
