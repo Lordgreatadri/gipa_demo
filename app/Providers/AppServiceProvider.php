@@ -32,6 +32,8 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api-public', fn (Request $request) => Limit::perMinute(120)->by($request->ip()));
         RateLimiter::for('api-certificate-verification', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
         RateLimiter::for('api-inquiry', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
+        RateLimiter::for('contact-us', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
+        RateLimiter::for('sms-webhooks', fn (Request $request) => Limit::perMinute(300)->by($request->ip()));
 
         Gate::before(fn (User $user) => $user->hasRole('Super Administrator') ? true : null);
 

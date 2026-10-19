@@ -34,6 +34,7 @@
                     <a href="{{ route('districts.index') }}#investment-map">Investment map</a>
                     <a href="{{ route('districts.index') }}" @class(['is-current' => request()->routeIs('districts.*')])>Districts</a>
                     <a href="{{ route('home') }}#insights">Insights</a>
+                    <a href="{{ route('contact.create') }}" @class(['is-current' => request()->routeIs('contact.*')])>Contact us</a>
                 </nav>
                 <div class="header-actions">
                     <button class="icon-button" type="button" data-theme-toggle aria-label="Switch to dark mode" title="Change colour theme">
@@ -55,6 +56,7 @@
                 <a href="{{ route('districts.index') }}#investment-map">Investment map</a>
                 <a href="{{ route('districts.index') }}">Districts</a>
                 <a href="{{ route('platform.guide') }}">Investor guide</a>
+                <a href="{{ route('contact.create') }}">Contact us</a>
                 @guest
                     <a href="{{ route('login') }}">Investor login</a>
                 @else
@@ -67,7 +69,7 @@
             <div class="shell site-footer__main">
                 <div class="footer-brand"><a class="brand brand--footer" href="{{ route('home') }}"><img class="brand__logo" src="{{ asset('images/gipa-logo.png') }}" alt=""><span class="brand__name"><strong>IOMP</strong><small>Investment Opportunities Mapping Project</small></span></a><p>A trusted national platform for discovering verified investment opportunities across Ghana.</p></div>
                 <div class="footer-links"><strong>Explore</strong><a href="{{ route('opportunities.index') }}">Opportunities</a><a href="{{ route('districts.index') }}#investment-map">Investment map</a><a href="{{ route('districts.index') }}">Districts</a></div>
-                <div class="footer-links"><strong>Support</strong><a href="mailto:info@example.gov.gh">info@example.gov.gh</a><a href="tel:+233000000000">+233 (0) 00 000 0000</a><span>Accra, Ghana</span></div>
+                <div class="footer-links"><strong>Support</strong><a href="{{ route('contact.create') }}">Contact us</a><a href="mailto:info@example.gov.gh">info@example.gov.gh</a><a href="tel:+233000000000">+233 (0) 00 000 0000</a><span>Accra, Ghana</span></div>
                 <div class="footer-links"><strong>Platform</strong><a href="{{ route('platform.guide') }}">Investor guide</a><a href="{{ route('api.documentation') }}">API documentation</a>@guest<a href="{{ route('login') }}">Investor login</a>@else<a href="{{ auth()->user()->isStaff() ? route('staff.dashboard') : route('investor.dashboard') }}">Workspace</a>@endguest</div>
             </div>
             <div class="shell site-footer__bottom"><span>&copy; {{ date('Y') }} IOMP. Republic of Ghana.</span><div><span>Privacy</span><span>Terms</span><span>Data policy</span></div></div>

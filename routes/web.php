@@ -2,13 +2,16 @@
 
 use App\Http\Controllers\Admin\AssistantKnowledgeController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\CertificateController as AdminCertificateController;
+use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DistrictWorkflowController;
 use App\Http\Controllers\Admin\InvestorOnboardingController as AdminInvestorOnboardingController;
 use App\Http\Controllers\Admin\OpportunityReferenceDataController;
 use App\Http\Controllers\Admin\OpportunityWorkflowController;
 use App\Http\Controllers\Admin\SlaMonitorController;
+use App\Http\Controllers\Admin\SmsConfigController;
 use App\Http\Controllers\Admin\StaffDistrictAssignmentController;
 use App\Http\Controllers\Admin\WorkspaceDirectoryController;
 use App\Http\Controllers\AssistantController;
@@ -19,6 +22,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\InvestorPortalController;
 use App\Http\Controllers\PublicPortal\CertificateVerificationController;
+use App\Http\Controllers\PublicPortal\ContactController;
 use App\Http\Controllers\PublicPortal\DistrictController;
 use App\Http\Controllers\PublicPortal\OpportunityController;
 use App\Services\PublicOpportunityFilters;
@@ -41,6 +45,11 @@ Route::post('/opportunities/{opportunity}/inquiries', [OpportunityController::cl
 Route::get('/c/{token}', [CertificateVerificationController::class, 'show'])
     ->middleware('throttle:30,1')
     ->name('certificates.verify');
+
+Route::get('/contact', [ContactController::class, 'create'])->name('contact.create');
+Route::post('/contact', [ContactController::class, 'store'])
+    ->middleware('throttle:contact-us')
+    ->name('contact.store');
 
 Route::post('/assistant/chat', [AssistantController::class, 'store'])
     ->middleware('throttle:assistant')
@@ -84,6 +93,27 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'staff'])->group(fun
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('/audit-logs/export', [AuditLogController::class, 'export'])->name('audit-logs.export');
     Route::get('/sla-monitor', [SlaMonitorController::class, 'index'])->name('sla-monitor.index');
+
+    Route::get('/sms', [SmsConfigController::class, 'index'])->name('sms.index');
+    Route::get('/sms/messages', [SmsConfigController::class, 'messages'])->name('sms.messages');
+    Route::get('/sms/messages/{message}', [SmsConfigController::class, 'show'])->name('sms.messages.show');
+    Route::get('/sms/providers/{provider}/edit', [SmsConfigController::class, 'edit'])->name('sms.edit');
+    Route::put('/sms/providers/{provider}', [SmsConfigController::class, 'update'])->name('sms.update');
+    Route::post('/sms/configs/{config}/toggle', [SmsConfigController::class, 'toggle'])->name('sms.toggle');
+    Route::post('/sms/configs/{config}/balance', [SmsConfigController::class, 'refreshBalance'])->name('sms.balance');
+    Route::post('/sms/configs/{config}/test', [SmsConfigController::class, 'test'])->middleware('throttle:10,1')->name('sms.test');
+
+    Route::get('/contact-messages', [ContactMessageController::class, 'index'])->name('contact-messages.index');
+    Route::get('/contact-messages/{message}', [ContactMessageController::class, 'show'])->name('contact-messages.show');
+    Route::patch('/contact-messages/{message}', [ContactMessageController::class, 'update'])->name('contact-messages.update');
+    Route::delete('/contact-messages/{message}', [ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+
+    Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+    Route::post('/backups', [BackupController::class, 'store'])->middleware('throttle:6,1')->name('backups.store');
+    Route::post('/backups/cleanup', [BackupController::class, 'cleanup'])->middleware('throttle:6,1')->name('backups.cleanup');
+    Route::get('/backups/{archive}/download', [BackupController::class, 'download'])->middleware('throttle:20,1')->name('backups.download');
+    Route::delete('/backups/{archive}', [BackupController::class, 'destroy'])->name('backups.destroy');
+
     Route::get('/assistant/knowledge', [AssistantKnowledgeController::class, 'index'])->name('assistant.knowledge.index');
     Route::get('/assistant/knowledge/create', [AssistantKnowledgeController::class, 'create'])->name('assistant.knowledge.create');
     Route::post('/assistant/knowledge', [AssistantKnowledgeController::class, 'store'])->name('assistant.knowledge.store');
